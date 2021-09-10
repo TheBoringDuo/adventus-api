@@ -1,0 +1,7 @@
+*.sqlite3
+tripplanning/secret.py
+apienv/
+*.pyc
+*.pyo
+/static
+
