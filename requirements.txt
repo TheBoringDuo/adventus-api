@@ -4,6 +4,7 @@ async-timeout==3.0.1
 attrs==21.2.0
 autobahn==21.2.1
 Automat==20.2.0
+BeautifulSoup4==4.10.0
 cffi==1.14.6
 channels==3.0.4
 channels-redis==3.3.0
@@ -19,6 +20,7 @@ hyperlink==21.0.0
 idna==3.2
 importlib-metadata==4.8.1
 incremental==21.3.0
+lxml==4.6.3
 Markdown==3.3.4
 msgpack==1.0.2
 pyasn1==0.4.8
@@ -27,6 +29,7 @@ pycparser==2.20
 pyOpenSSL==20.0.1
 pytz==2021.1
 redis==3.5.3
+requests==2.26.0
 service-identity==21.1.0
 six==1.16.0
 sqlparse==0.4.1
