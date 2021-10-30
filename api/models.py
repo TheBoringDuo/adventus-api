@@ -8,7 +8,7 @@ class Country(models.Model):
 class City(models.Model):
     name = models.CharField(max_length=30)
     country = models.ForeignKey(Country, on_delete=models.RESTRICT)
-    destID = models.CharField(max_length=12, unique=True)
+    destID = models.CharField(max_length=12, unique=True, null=False)
     
     class Meta:
         unique_together = ('name', 'country')
