@@ -4,4 +4,4 @@ apienv/
 *.pyc
 *.pyo
 /static
-
+myvenv/
