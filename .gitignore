@@ -5,3 +5,4 @@ apienv/
 *.pyo
 /static
 myvenv/
+tags
