@@ -8,6 +8,7 @@ class HotelsSerializer(serializers.ModelSerializer):
         fields = ['name', 'link', 'updated_on']
 
 class CitySerializer(serializers.ModelSerializer):
+    countryName = serializers.CharField(source='country.name')
     class Meta:
         model = City
-        fields = ['id', 'name', 'country']
+        fields = ['id', 'name', 'country', 'countryName']
