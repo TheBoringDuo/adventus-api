@@ -10,10 +10,13 @@ from api.serializers import HotelsSerializer, CitySerializer
 
 
 @api_view(["GET"])
-@permission_classes((permissions.IsAuthenticated,))
-def getHotelsByCityID(request, cityID):
+# @permission_classes((permissions.IsAuthenticated,))
+def getHotelsByCityID(request, cityID, limitResults = -1):
     try:
-        hotels = Hotel.objects.filter(city__id = cityID)
+        if limitResults == -1:
+            hotels = Hotel.objects.filter(city__id = cityID)
+        else:
+            hotels = Hotel.objects.filter(city__id = cityID, pk__lte = limitResults)
     except Exception as e:
         print(e)
         return Response("{}")

@@ -25,6 +25,7 @@ from rest_framework_simplejwt.views import (
 urlpatterns = [
     path('admin/', admin.site.urls),
     path('get_by_city_id/<cityID>/', api.getHotelsByCityID),
+    path('get_by_city_id/<cityID>/<limitResults>/', api.getHotelsByCityID),
     path('api/token/', TokenObtainPairView.as_view(), name='token_obtain_pair'),
     path('api/token/refresh/', TokenRefreshView.as_view(), name='token_refresh'),
     path('get_cities/', api.getAllCitiesByCountryOrNot),
