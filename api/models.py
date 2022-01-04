@@ -1,5 +1,6 @@
 from django.db import models
-
+from django.contrib.auth.models import AbstractUser
+import django.contrib.auth.models as authModels
 # Create your models here.
 
 class Country(models.Model):
@@ -20,3 +21,11 @@ class Hotel(models.Model):
     updated_on = models.DateTimeField(auto_now=True)
     city = models.ForeignKey(City, on_delete=models.PROTECT)
 
+
+class User(AbstractUser):
+	email = models.EmailField(unique=True)
+	isBusinessClient = models.BooleanField(default=False)
+	USERNAME_FIELD = AbstractUser.get_email_field_name()
+	REQUIRED_FIELDS = ['username', 'first_name', 'last_name']
+
+	

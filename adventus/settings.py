@@ -60,6 +60,8 @@ REST_FRAMEWORK = {
     )
 }
 
+AUTH_USER_MODEL = 'api.User'
+
 ROOT_URLCONF = 'adventus.urls'
 
 TEMPLATES = [

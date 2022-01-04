@@ -2,11 +2,10 @@ from django.shortcuts import render
 from rest_framework.views import APIView
 from rest_framework.decorators import api_view, permission_classes
 from rest_framework.response import Response
-from rest_framework import authentication, permissions
+from rest_framework import authentication, permissions, generics
 # Create your views here.
-from api.models import Hotel, City, Country
-from api.serializers import HotelsSerializer, CitySerializer
-
+from api.models import Hotel, City, Country, User
+from api.serializers import HotelsSerializer, CitySerializer, RegisterSerializer
 
 
 @api_view(["GET"])
@@ -43,3 +42,9 @@ def getAllCitiesByCountryOrNot(request):
     serializer = CitySerializer(cities, many=True)
     print(country)
     return Response(serializer.data)
+
+
+class RegisterView(generics.CreateAPIView):
+	queryset = User.objects.all()
+	serializer_class = RegisterSerializer
+
