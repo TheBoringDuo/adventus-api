@@ -9,6 +9,13 @@ class HotelsSerializer(serializers.ModelSerializer):
         model = Hotel
         fields = ['name', 'locLong', 'locLat', 'available', 'bookingLink', 'updated_on']
 
+class HotelSerializer(serializers.ModelSerializer):
+    ownedByName = serializers.CharField(source='ownedBy.full_name', default="")
+    ownedByID = serializers.IntegerField(source='ownedBy.id', default=-1)
+    class Meta:
+        model = Hotel
+        fields = ['name', 'bookingLink', 'updated_on', 'isFetchedFromBooking', 'description', 'available', 'ownedByName', 'ownedByID', 'locLong', 'locLat']
+
 class CitySerializer(serializers.ModelSerializer):
     countryName = serializers.CharField(source='country.name')
     class Meta:

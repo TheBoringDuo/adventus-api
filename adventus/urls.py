@@ -31,6 +31,7 @@ urlpatterns = [
     path('get_cities/', api.getAllCitiesByCountryOrNot),
 	path('register/', api.RegisterView.as_view(), name='auth_register'),
 	path('register/business/', api.BusinessRegisterView.as_view(), name='auth_register_business'),
-    path('test/', api.testView, name='testView')
+    path('test/', api.testView, name='testView'),
+    path('get_hotel_by_id/<hotelID>/', api.getHotelByID)
 ]
 

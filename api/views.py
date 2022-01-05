@@ -5,7 +5,7 @@ from rest_framework.response import Response
 from rest_framework import authentication, permissions, generics
 # Create your views here.
 from api.models import Hotel, City, Country, User
-from api.serializers import HotelsSerializer, CitySerializer, RegisterSerializer, BusinessRegisterSerializer
+from api.serializers import HotelsSerializer, CitySerializer, RegisterSerializer, BusinessRegisterSerializer, HotelSerializer
 from django.http import HttpResponse
 from .permissions import CanAddBusinessObjects
 
@@ -14,9 +14,9 @@ from .permissions import CanAddBusinessObjects
 def getHotelsByCityID(request, cityID, limitResults = -1):
     try:
         if limitResults == -1:
-            hotels = Hotel.objects.filter(city__id = cityID)
+            hotels = Hotel.objects.filter(city__id = cityID, active=True, listed=True)
         else:
-            hotels = Hotel.objects.filter(city__id = cityID, pk__lte = limitResults)
+            hotels = Hotel.objects.filter(city__id = cityID, pk__lte = limitResults, active=True, listed=True)
     except Exception as e:
         print(e)
         return Response("{}")
@@ -24,7 +24,18 @@ def getHotelsByCityID(request, cityID, limitResults = -1):
     serializer = HotelsSerializer(hotels, many=True)
 
     return Response(serializer.data)
-       
+
+@api_view(["GET"])
+def getHotelByID(request, hotelID):
+    try:
+        hotel = Hotel.objects.get(id=hotelID, active=True)
+        print(hotel)
+    except Exception as e:
+        print(e)
+        return Response("{}")
+
+    serializer = HotelSerializer(hotel)
+    return Response(serializer.data)
 
 @api_view(["GET"])
 def getAllCitiesByCountryOrNot(request):
