@@ -7,7 +7,7 @@ import uuid
 class HotelsSerializer(serializers.ModelSerializer):
     class Meta:
         model = Hotel
-        fields = ['name', 'link', 'updated_on']
+        fields = ['name', 'locLong', 'locLat', 'available', 'bookingLink', 'updated_on']
 
 class CitySerializer(serializers.ModelSerializer):
     countryName = serializers.CharField(source='country.name')

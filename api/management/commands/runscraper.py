@@ -49,7 +49,7 @@ class Command(BaseCommand):
                     cont = True
                     
                     hotel, created = Hotel.objects.get_or_create(city=cityObj, name=hotelName)
-                    hotel.link = link
+                    hotel.bookingLink = link
                     hotel.save()
 
                     if hotelName not in allFetched:
