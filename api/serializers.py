@@ -28,11 +28,23 @@ class RegisterSerializer(serializers.ModelSerializer):
 			'last_name': {'required': True}
 		}
 
-	def create(self, validated_data):
-		username = str(uuid.uuid4()) # we do not need the username field, but django.contrib.auth requires it to exist and be unique so we are generating a random uuid for each user to handle that 
-		user = User.objects.create(username=username, email=validated_data["email"],
-		first_name=validated_data["first_name"], last_name=validated_data["last_name"])
+	def create(self, validated_data, user=None):
+		if user is None:
+			username = str(uuid.uuid4()) # we do not need the username field, but django.contrib.auth requires it to exist and be unique so we are generating a random uuid for each user to handle that 
+			user = User.objects.create(username=username, email=validated_data["email"],
+			first_name=validated_data["first_name"], last_name=validated_data["last_name"])
 		user.set_password(validated_data["password"])
 		user.save()
 		return user
 
+
+class BusinessRegisterSerializer(RegisterSerializer):
+	def create(self, validated_data):
+		username = str(uuid.uuid4())
+		user = User.objects.create(username=username, email=validated_data["email"],
+		first_name=validated_data["first_name"], last_name=validated_data["last_name"], isBusinessClient=True)
+		user = super().create(validated_data, user)
+		return user
+
+
+	

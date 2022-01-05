@@ -5,7 +5,7 @@ from rest_framework.response import Response
 from rest_framework import authentication, permissions, generics
 # Create your views here.
 from api.models import Hotel, City, Country, User
-from api.serializers import HotelsSerializer, CitySerializer, RegisterSerializer
+from api.serializers import HotelsSerializer, CitySerializer, RegisterSerializer, BusinessRegisterSerializer
 
 
 @api_view(["GET"])
@@ -47,4 +47,11 @@ def getAllCitiesByCountryOrNot(request):
 class RegisterView(generics.CreateAPIView):
 	queryset = User.objects.all()
 	serializer_class = RegisterSerializer
+	
+
+class BusinessRegisterView(generics.CreateAPIView):
+	queryset = User.objects.all()
+	serializer_class = BusinessRegisterSerializer
+
+
 
