@@ -30,6 +30,7 @@ urlpatterns = [
     path('api/token/refresh/', TokenRefreshView.as_view(), name='token_refresh'),
     path('get_cities/', api.getAllCitiesByCountryOrNot),
 	path('register/', api.RegisterView.as_view(), name='auth_register'),
-	path('register/business/', api.BusinessRegisterView.as_view(), name='auth_register_business')
+	path('register/business/', api.BusinessRegisterView.as_view(), name='auth_register_business'),
+    path('test/', api.testView, name='testView')
 ]
 

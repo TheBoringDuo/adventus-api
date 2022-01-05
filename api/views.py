@@ -6,7 +6,8 @@ from rest_framework import authentication, permissions, generics
 # Create your views here.
 from api.models import Hotel, City, Country, User
 from api.serializers import HotelsSerializer, CitySerializer, RegisterSerializer, BusinessRegisterSerializer
-
+from django.http import HttpResponse
+from .permissions import CanAddBusinessObjects
 
 @api_view(["GET"])
 # @permission_classes((permissions.IsAuthenticated,))
@@ -53,5 +54,7 @@ class BusinessRegisterView(generics.CreateAPIView):
 	queryset = User.objects.all()
 	serializer_class = BusinessRegisterSerializer
 
-
-
+@api_view(['GET'])
+@permission_classes((CanAddBusinessObjects,))
+def testView(request):
+    return HttpResponse("Business Client")
