@@ -62,7 +62,7 @@ def getHotelsByCityAndTags(request, cityID):
         return Response("{}")
     else:
         tags = tags.split(',')
-        hotels = Hotel.objects.filter(city__id=cityID, tags__name__in=tags, active=True)
+        hotels = Hotel.objects.filter(city__id=cityID, tags__name__in=tags, active=True).distinct()
         if hotels is not None:
             serializer = HotelsSerializer(hotels, many=True)
             return Response(serializer.data)
