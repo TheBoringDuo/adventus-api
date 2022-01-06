@@ -55,6 +55,19 @@ def getAllCitiesByCountryOrNot(request):
     print(country)
     return Response(serializer.data)
 
+@api_view(["GET"])
+def getHotelsByCityAndTags(request, cityID):
+    tags = request.GET.get('tags', None)
+    if tags is None:
+        return Response("{}")
+    else:
+        tags = tags.split(',')
+        hotels = Hotel.objects.filter(city__id=cityID, tags__name__in=tags, active=True)
+        if hotels is not None:
+            serializer = HotelsSerializer(hotels, many=True)
+            return Response(serializer.data)
+        else:
+            return Response("{}")
 
 class RegisterView(generics.CreateAPIView):
 	queryset = User.objects.all()

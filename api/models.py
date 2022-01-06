@@ -1,6 +1,7 @@
 from django.db import models
 from django.contrib.auth.models import AbstractUser
 import django.contrib.auth.models as authModels
+from taggit.managers import TaggableManager
 # Create your models here.
 
 class Country(models.Model):
@@ -37,6 +38,7 @@ class Hotel(models.Model):
     ownedBy = models.ForeignKey(User, on_delete=models.PROTECT, null=True)
     locLong = models.DecimalField(max_digits=9, decimal_places=6, null=True)
     locLat = models.DecimalField(max_digits=9, decimal_places=6, null=True)
+    tags = TaggableManager()
 
 class Restaurant(models.Model):
     name = models.CharField(max_length=50)
@@ -51,3 +53,4 @@ class Restaurant(models.Model):
     ownedBy = models.ForeignKey(User, on_delete=models.PROTECT, null=True)
     locLong = models.DecimalField(max_digits=9, decimal_places=6, null=True)
     locLat = models.DecimalField(max_digits=9, decimal_places=6, null=True)
+    tags = TaggableManager()

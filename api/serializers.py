@@ -3,18 +3,22 @@ from rest_framework.validators import UniqueValidator
 from api.models import Hotel, City, Country, User
 from django.contrib.auth.password_validation import validate_password
 import uuid
+from taggit.serializers import TagListSerializerField, TaggitSerializer
 
-class HotelsSerializer(serializers.ModelSerializer):
+class HotelsSerializer(TaggitSerializer, serializers.ModelSerializer):
+    tags = TagListSerializerField()
+
     class Meta:
         model = Hotel
-        fields = ['name', 'locLong', 'locLat', 'available', 'bookingLink', 'updated_on']
+        fields = ['name', 'tags', 'locLong', 'locLat', 'available', 'bookingLink', 'updated_on']
 
-class HotelSerializer(serializers.ModelSerializer):
+class HotelSerializer(TaggitSerializer, serializers.ModelSerializer):
+    tags = TagListSerializerField()
     ownedByName = serializers.CharField(source='ownedBy.full_name', default="")
     ownedByID = serializers.IntegerField(source='ownedBy.id', default=-1)
     class Meta:
         model = Hotel
-        fields = ['name', 'bookingLink', 'updated_on', 'isFetchedFromBooking', 'description', 'available', 'ownedByName', 'ownedByID', 'locLong', 'locLat']
+        fields = ['name', 'tags', 'bookingLink', 'updated_on', 'isFetchedFromBooking', 'description', 'available', 'ownedByName', 'ownedByID', 'locLong', 'locLat']
 
 class CitySerializer(serializers.ModelSerializer):
     countryName = serializers.CharField(source='country.name')
