@@ -12,7 +12,7 @@ class HotelsSerializer(TaggitSerializer, serializers.ModelSerializer):
 
     class Meta:
         model = Hotel
-        fields = ['name', 'tags', 'locLong', 'locLat', 'available', 'bookingLink', 'updated_on']
+        fields = ['id', 'name', 'tags', 'locLong', 'locLat', 'available', 'bookingLink', 'updated_on']
 
 class HotelSerializer(TaggitSerializer, serializers.ModelSerializer):
     tags = TagListSerializerField()
@@ -78,8 +78,16 @@ class RegisterHotelSerializer(serializers.ModelSerializer):
 
 		hotel = Hotel.objects.create(name=validated_data["name"], city=validated_data["city"], description=validated_data["description"], ownedBy=user)
 		
-		for tag in validated_data["tags"]:
-			hotel.tags.add(tag)
+		hotel.tags.set(validated_data["tags"])
 		hotel.save()
 		return hotel
-    	
+
+	
+	def update(self, instance, validated_data):
+		instance.name = validated_data["name"]
+		instance.description = validated_data["description"]
+		instance.city = validated_data["city"]
+		instance.tags.set(validated_data["tags"])
+		instance.save()
+		return instance
+

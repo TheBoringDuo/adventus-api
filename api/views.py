@@ -8,8 +8,9 @@ from api.models import Hotel, City, Country, User
 from api.serializers import HotelsSerializer, CitySerializer, RegisterSerializer, BusinessRegisterSerializer, HotelSerializer
 from api.serializers import RegisterHotelSerializer, TagsSerializer
 from django.http import HttpResponse
-from .permissions import CanAddBusinessObjects
+from .permissions import CanAddBusinessObjects, CanEditBusinessObject
 from taggit.models import Tag
+from rest_framework.mixins import UpdateModelMixin
 
 @api_view(["GET"])
 # @permission_classes((permissions.IsAuthenticated,))
@@ -89,6 +90,14 @@ def testView(request):
 class RegisterHotelView(generics.CreateAPIView):
 	queryset = Hotel.objects.all()
 	serializer_class = RegisterHotelSerializer
+
+@permission_classes((CanEditBusinessObject,permissions.IsAuthenticated,))
+class HotelPartialUpdateView(generics.GenericAPIView, UpdateModelMixin):
+	queryset = Hotel.objects.all()
+	serializer_class = RegisterHotelSerializer
+
+	def post(self, request, *args, **kwargs):
+		return self.partial_update(request, *args, **kwargs)
 
 
 @api_view(["GET"])
