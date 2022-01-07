@@ -4,6 +4,8 @@ from api.models import Hotel, City, Country, User
 from django.contrib.auth.password_validation import validate_password
 import uuid
 from taggit.serializers import TagListSerializerField, TaggitSerializer
+from taggit.models import Tag
+import json
 
 class HotelsSerializer(TaggitSerializer, serializers.ModelSerializer):
     tags = TagListSerializerField()
@@ -26,6 +28,11 @@ class CitySerializer(serializers.ModelSerializer):
         model = City
         fields = ['id', 'name', 'country', 'countryName']
 
+class TagsSerializer(serializers.ModelSerializer):
+	
+	class Meta:
+		model = Tag
+		fields = ["name"]
 
 class RegisterSerializer(serializers.ModelSerializer):
     email = serializers.EmailField(required=True,validators=[UniqueValidator(queryset=User.objects.all())])
@@ -57,5 +64,22 @@ class BusinessRegisterSerializer(RegisterSerializer):
         user = super().create(validated_data, user)
         return user
 
+class RegisterHotelSerializer(serializers.ModelSerializer):
+	tags = TagListSerializerField()
+	class Meta:
+		model = Hotel
+		fields = ['name', 'city', 'description', 'tags']
 
-    
+	def create(self, validated_data):
+		user = None
+		request = self.context.get('request')
+		if request and hasattr(request, "user"):
+			user = request.user
+
+		hotel = Hotel.objects.create(name=validated_data["name"], city=validated_data["city"], description=validated_data["description"], ownedBy=user)
+		
+		for tag in validated_data["tags"]:
+			hotel.tags.add(tag)
+		hotel.save()
+		return hotel
+    	

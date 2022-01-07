@@ -6,8 +6,10 @@ from rest_framework import authentication, permissions, generics
 # Create your views here.
 from api.models import Hotel, City, Country, User
 from api.serializers import HotelsSerializer, CitySerializer, RegisterSerializer, BusinessRegisterSerializer, HotelSerializer
+from api.serializers import RegisterHotelSerializer, TagsSerializer
 from django.http import HttpResponse
 from .permissions import CanAddBusinessObjects
+from taggit.models import Tag
 
 @api_view(["GET"])
 # @permission_classes((permissions.IsAuthenticated,))
@@ -82,3 +84,16 @@ class BusinessRegisterView(generics.CreateAPIView):
 @permission_classes((CanAddBusinessObjects,))
 def testView(request):
     return HttpResponse("Business Client")
+
+@permission_classes((CanAddBusinessObjects,permissions.IsAuthenticated,))
+class RegisterHotelView(generics.CreateAPIView):
+	queryset = Hotel.objects.all()
+	serializer_class = RegisterHotelSerializer
+
+
+@api_view(["GET"])
+def getAllTags(request):
+	tags = Tag.objects.all()
+	print(tags)
+	serializer = TagsSerializer(tags, many=True)
+	return Response(serializer.data)

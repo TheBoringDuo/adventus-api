@@ -34,5 +34,7 @@ urlpatterns = [
     path('test/', api.testView, name='testView'),
     path('get_hotel_by_id/<hotelID>/', api.getHotelByID),
     path('get_hotels_by_tags/<cityID>/', api.getHotelsByCityAndTags),
+	path('register_hotel/', api.RegisterHotelView.as_view(), name='register_hotel'),
+	path('tags/', api.getAllTags),
 ]
 
