@@ -4,8 +4,8 @@ from rest_framework.decorators import api_view, permission_classes
 from rest_framework.response import Response
 from rest_framework import authentication, permissions, generics
 # Create your views here.
-from api.models import Hotel, City, Country, User
-from api.serializers import HotelsSerializer, CitySerializer, RegisterSerializer, BusinessRegisterSerializer, HotelSerializer
+from api.models import Hotel, City, Country, User, Restaurant
+from api.serializers import HotelsSerializer, CitySerializer, RegisterSerializer, BusinessRegisterSerializer, HotelSerializer, RestaurantSerializer, RestaurantsSerializer, RegisterRestaurantSerializer
 from api.serializers import RegisterHotelSerializer, TagsSerializer
 from django.http import HttpResponse
 from .permissions import CanAddBusinessObjects, CanEditBusinessObject
@@ -25,8 +25,25 @@ def getHotelsByCityID(request, cityID, limitResults = -1):
         return Response("{}")
 
     serializer = HotelsSerializer(hotels, many=True)
+    return Response(serializer.data)
+
+
+@api_view(["GET"])
+# @permission_classes((permissions.IsAuthenticated,))
+def getRestaurantsByCityID(request, cityID, limitResults = -1):
+    try:
+        if limitResults == -1:
+            restaurants = Restaurant.objects.filter(city__id = cityID, active=True, listed=True)
+        else:
+            restaurants = Restaurant.objects.filter(city__id = cityID, pk__lte = limitResults, active=True, listed=True)
+    except Exception as e:
+        print(e)
+        return Response("{}")
+
+    serializer = RestaurantsSerializer(restaurants, many=True)
 
     return Response(serializer.data)
+
 
 @api_view(["GET"])
 def getHotelByID(request, hotelID):
@@ -39,6 +56,19 @@ def getHotelByID(request, hotelID):
 
     serializer = HotelSerializer(hotel)
     return Response(serializer.data)
+
+@api_view(["GET"])
+def getRestaurantByID(request, restaurantID):
+    try:
+        restaurant = Restaurant.objects.get(id=restaurantID, active=True)
+        print(restaurant)
+    except Exception as e:
+        print(e)
+        return Response("{}")
+
+    serializer = RestaurantSerializer(restaurant)
+    return Response(serializer.data)
+
 
 @api_view(["GET"])
 def getAllCitiesByCountryOrNot(request):
@@ -72,6 +102,21 @@ def getHotelsByCityAndTags(request, cityID):
         else:
             return Response("{}")
 
+@api_view(["GET"])
+def getRestaurantsByCityAndTags(request, cityID):
+    tags = request.GET.get('tags', None)
+    if tags is None:
+        return Response("{}")
+    else:
+        tags = tags.split(',')
+        restaurants = Restaurant.objects.filter(city__id=cityID, tags__name__in=tags, active=True).distinct()
+        if restaurants is not None:
+            serializer = RestaurantsSerializer(restaurants, many=True)
+            return Response(serializer.data)
+        else:
+            return Response("{}")
+
+
 class RegisterView(generics.CreateAPIView):
 	queryset = User.objects.all()
 	serializer_class = RegisterSerializer
@@ -99,6 +144,19 @@ class HotelPartialUpdateView(generics.GenericAPIView, UpdateModelMixin):
 	def post(self, request, *args, **kwargs):
 		return self.partial_update(request, *args, **kwargs)
 
+@permission_classes((CanEditBusinessObject,permissions.IsAuthenticated,))
+class RestaurantPartialUpdateView(generics.GenericAPIView, UpdateModelMixin):
+    queryset = Restaurant.objects.all()
+    serializer_class = RegisterRestaurantSerializer
+
+    def post(self, request, *args, **kwargs):
+        return self.partial_update(request, *args, **kwargs)
+
+
+@permission_classes((CanAddBusinessObjects, permissions.IsAuthenticated,))
+class RegisterRestaurantView(generics.CreateAPIView):
+    queryset = Restaurant.objects.all()
+    serializer_class = RegisterRestaurantSerializer
 
 @api_view(["GET"])
 def getAllTags(request):

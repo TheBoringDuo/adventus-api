@@ -24,8 +24,8 @@ from rest_framework_simplejwt.views import (
 
 urlpatterns = [
     path('admin/', admin.site.urls),
-    path('get_by_city_id/<cityID>/', api.getHotelsByCityID),
-    path('get_by_city_id/<cityID>/<limitResults>/', api.getHotelsByCityID),
+    path('get_hotels_by_city/<cityID>/', api.getHotelsByCityID),
+    path('get_hotels_by_city/<cityID>/<limitResults>/', api.getHotelsByCityID),
     path('api/token/', TokenObtainPairView.as_view(), name='token_obtain_pair'),
     path('api/token/refresh/', TokenRefreshView.as_view(), name='token_refresh'),
     path('get_cities/', api.getAllCitiesByCountryOrNot),
@@ -37,5 +37,11 @@ urlpatterns = [
 	path('register_hotel/', api.RegisterHotelView.as_view(), name='register_hotel'),
 	path('tags/', api.getAllTags),
 	path('update_hotel/<pk>/', api.HotelPartialUpdateView.as_view(), name='update_hotel'),
+    path('get_restaurant_by_id/<restaurantID>/', api.getRestaurantByID),
+    path('register_restaurant/', api.RegisterRestaurantView.as_view(), name='register_restaurant'),
+    path('get_rests_by_city/<cityID>/', api.getRestaurantsByCityID),
+    path('get_rests_by_city/<cityID>/<limitResults>/', api.getRestaurantsByCityID),
+    path('update_restaurant/<pk>/', api.RestaurantPartialUpdateView.as_view(), name='update_rest'),
+    path('get_rests_by_tags/<cityID>/', api.getRestaurantsByCityAndTags),
 ]
 

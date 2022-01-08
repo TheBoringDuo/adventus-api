@@ -1,6 +1,6 @@
 from rest_framework import serializers
 from rest_framework.validators import UniqueValidator
-from api.models import Hotel, City, Country, User
+from api.models import Hotel, City, Country, User, Restaurant
 from django.contrib.auth.password_validation import validate_password
 import uuid
 from taggit.serializers import TagListSerializerField, TaggitSerializer
@@ -28,11 +28,27 @@ class CitySerializer(serializers.ModelSerializer):
         model = City
         fields = ['id', 'name', 'country', 'countryName']
 
+class RestaurantSerializer(TaggitSerializer, serializers.ModelSerializer):
+    tags = TagListSerializerField()
+    ownedByName = serializers.CharField(source='ownedBy.full_name', default="")
+    ownedByID = serializers.IntegerField(source='ownedBy.id', default=-1)
+    class Meta:
+        model = Restaurant
+        fields = ['name', 'tags', 'updated_on', 'description', 'available', 'ownedByName', 'ownedByID', 'locLong', 'locLat']
+
+
+class RestaurantsSerializer(TaggitSerializer, serializers.ModelSerializer):
+    tags = TagListSerializerField()
+
+    class Meta:
+        model = Restaurant
+        fields = ['id', 'name', 'tags', 'locLong', 'locLat', 'available', 'updated_on']
+
 class TagsSerializer(serializers.ModelSerializer):
-	
-	class Meta:
-		model = Tag
-		fields = ["name"]
+    
+    class Meta:
+        model = Tag
+        fields = ["name"]
 
 class RegisterSerializer(serializers.ModelSerializer):
     email = serializers.EmailField(required=True,validators=[UniqueValidator(queryset=User.objects.all())])
@@ -65,29 +81,62 @@ class BusinessRegisterSerializer(RegisterSerializer):
         return user
 
 class RegisterHotelSerializer(serializers.ModelSerializer):
-	tags = TagListSerializerField()
-	class Meta:
-		model = Hotel
-		fields = ['name', 'city', 'description', 'tags']
+    tags = TagListSerializerField()
+    class Meta:
+        model = Hotel
+        fields = ['name', 'city', 'description', 'tags']
 
-	def create(self, validated_data):
-		user = None
-		request = self.context.get('request')
-		if request and hasattr(request, "user"):
-			user = request.user
+    def create(self, validated_data):
+        user = None
+        request = self.context.get('request')
+        if request and hasattr(request, "user"):
+            user = request.user
 
-		hotel = Hotel.objects.create(name=validated_data["name"], city=validated_data["city"], description=validated_data["description"], ownedBy=user)
-		
-		hotel.tags.set(validated_data["tags"])
-		hotel.save()
-		return hotel
+        hotel = Hotel.objects.create(name=validated_data["name"], city=validated_data["city"], description=validated_data["description"], ownedBy=user)
+        
+        hotel.tags.set(validated_data["tags"])
+        hotel.save()
+        return hotel
 
-	
-	def update(self, instance, validated_data):
-		instance.name = validated_data["name"]
-		instance.description = validated_data["description"]
-		instance.city = validated_data["city"]
-		instance.tags.set(validated_data["tags"])
-		instance.save()
-		return instance
+    
+    def update(self, instance, validated_data):
+        instance.name = validated_data["name"]
+        instance.description = validated_data["description"]
+        instance.city = validated_data["city"]
+        instance.tags.set(validated_data["tags"])
+        instance.save()
+        return instance
+
+
+
+class RegisterRestaurantSerializer(serializers.ModelSerializer):
+    tags = TagListSerializerField()
+    class Meta:
+        model = Restaurant
+        fields = ['name', 'city', 'description', 'tags']
+
+    def create(self, validated_data):
+        user = None
+        request = self.context.get('request')
+        if request and hasattr(request, "user"):
+            user = request.user
+
+        restaurant = Restaurant.objects.create(name=validated_data["name"], city=validated_data["city"], description=validated_data["description"], ownedBy=user)
+        
+        restaurant.tags.set(validated_data["tags"])
+        restaurant.save()
+        return restaurant
+
+    
+    def update(self, instance, validated_data):
+        if "name" in validated_data:
+            instance.name = validated_data["name"]
+        if "description" in validated_data:
+            instance.description = validated_data["description"]
+        if "city" in validated_data:
+            instance.city = validated_data["city"]
+        if "tags" in validated_data:
+            instance.tags.set(validated_data["tags"])
+        instance.save()
+        return instance
 
