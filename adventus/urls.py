@@ -43,5 +43,6 @@ urlpatterns = [
     path('get_rests_by_city/<cityID>/<limitResults>/', api.getRestaurantsByCityID),
     path('update_restaurant/<pk>/', api.RestaurantPartialUpdateView.as_view(), name='update_rest'),
     path('get_rests_by_tags/<cityID>/', api.getRestaurantsByCityAndTags),
+    path('link_restaurant/', api.connectRestaurantToHotel),
 ]
 

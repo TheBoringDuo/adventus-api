@@ -140,3 +140,11 @@ class RegisterRestaurantSerializer(serializers.ModelSerializer):
         instance.save()
         return instance
 
+
+class LinkRestaurantToHotelSerializer(serializers.Serializer):
+    hotel_id = serializers.IntegerField()
+    restaurant_id = serializers.IntegerField()
+
+
+
+

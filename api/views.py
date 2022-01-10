@@ -6,7 +6,7 @@ from rest_framework import authentication, permissions, generics
 # Create your views here.
 from api.models import Hotel, City, Country, User, Restaurant
 from api.serializers import HotelsSerializer, CitySerializer, RegisterSerializer, BusinessRegisterSerializer, HotelSerializer, RestaurantSerializer, RestaurantsSerializer, RegisterRestaurantSerializer
-from api.serializers import RegisterHotelSerializer, TagsSerializer
+from api.serializers import RegisterHotelSerializer, TagsSerializer, LinkRestaurantToHotelSerializer
 from django.http import HttpResponse
 from .permissions import CanAddBusinessObjects, CanEditBusinessObject
 from taggit.models import Tag
@@ -164,3 +164,39 @@ def getAllTags(request):
 	print(tags)
 	serializer = TagsSerializer(tags, many=True)
 	return Response(serializer.data)
+
+
+@api_view(["POST"])
+@permission_classes((CanAddBusinessObjects, permissions.IsAuthenticated,))
+def connectRestaurantToHotel(request):
+    serializer = LinkRestaurantToHotelSerializer(request.data)
+    user = request.user
+    hotel_id = serializer.data["hotel_id"]
+    restaurant_id = serializer.data["restaurant_id"]
+    try:
+        hotel = Hotel.objects.get(id=hotel_id)
+    except:
+        return Response("Hotel with the given ID not found", status=418)
+
+    try:
+        restaurant = Restaurant.objects.get(id=restaurant_id)
+    except:
+        return Response("Restaurant with the given ID not found", status=419)
+
+    if hotel.ownedBy == user and restaurant.ownedBy == user:
+
+        if hotel.restaurant == None and Hotel.objects.filter(restaurant__id=restaurant_id).count() == 0:
+            hotel.restaurant = restaurant
+            hotel.save()
+            restaurant.locLong = hotel.locLong
+            restaurant.locLat = hotel.locLat
+            restaurant.save()
+            return Response("Linked the restaurant to the hotel")
+        else:
+            return Response("There is already a restaurant linked to that hotel or the restaurant is linked to another hotel", status=420)
+    else:
+        return Response("You do not own the restaurant and/or the hotel", status=403)
+
+    return Response("{}") 
+
+
