@@ -9,6 +9,7 @@ class Command(BaseCommand):
     def add_arguments(self, parser):
         parser.add_argument('country', nargs='?', type=str, default="Bulgaria")
         parser.add_argument('city', nargs='?', type=str, default="Varna")
+        parser.add_argument('unlimited', nargs='?', type=bool, default=False) # Setting the 'unlimited' argument to true runs the scraper for every hotel, not just the top rated ones; however this is very resource intensive and takes a lot of time, so by default we're only taking the best 25 ones according to Booking users
 
     def handle(self, *args, **options):
         country = options['country']
@@ -46,7 +47,7 @@ class Command(BaseCommand):
                 try:
                     hotelName = item.find('div', attrs = {'data-testid': 'title'}).string    
                     link = item.find('a', attrs = {'data-testid': 'title-link'})["href"]
-                    cont = True
+                    cont = options['unlimited'] # False by default to stop the loop at 25
                     
                     hotel, created = Hotel.objects.get_or_create(city=cityObj, name=hotelName)
                     hotel.bookingLink = link
@@ -60,6 +61,6 @@ class Command(BaseCommand):
                     #raise e
                     print(e)
                     print('')
-                i += 1
+                i += 1 # TODO: Explain why is this i even here
             offset += 25
         self.stdout.write(self.style.SUCCESS("Totally scraped {} hotels!".format(len(allFetched))))
