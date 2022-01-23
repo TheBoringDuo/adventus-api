@@ -58,10 +58,11 @@ class Command(BaseCommand):
 			hotelIds.append(getattr(hotel, 'id'))
 			hotelDescriptions[getattr(hotel, 'id')] = '' # TODO: In the local prototype with RapidAPI I also added the actual listing description, not just the reviews
 			try:
-				url1 = 'https://www.booking.com/reviewlist.en-gb.html?cc1=bg;pagename=' + re.search(r'\/bg\/(.*?)\.', getattr(hotel, 'bookingLink')).group(1) + ';type=total&;offset=' + str(offset) + ';rows=25#';
-			# self.stdout.write(self.style.SUCCESS("URL found: {}".format(url1)))
+				url1 = 'https://www.booking.com/reviewlist.en-gb.html?cc1=' + (re.search(r'\/[A-Za-z]{2}\/(.*?)\.', getattr(hotel, 'bookingLink')).group(0))[1:3] + ';pagename=' + re.search(r'\/[A-Za-z]{2}\/(.*?)\.', getattr(hotel, 'bookingLink')).group(1) + ';type=total&;offset=' + str(offset) + ';rows=25#'
+                
+			    # self.stdout.write(self.style.SUCCESS("URL found: {}".format(url1)))
 				responses.append({"hotel": hotel, "response": session.get(url1,headers=headers)})
-				print("y")
+				print(url1)
 			except:
 				print("d")
 				pass
@@ -83,7 +84,7 @@ class Command(BaseCommand):
 				positive = ''
 
 				try:
-					itemSelected = item.find('h3', attrs = {'class': 'c-review-block__title--original'})
+					itemSelected = item.find('h3', attrs = {'class': 'c-review-block__title'})
 					if itemSelected is not None:
 						title = itemSelected.text
 				except Exception as e:
@@ -91,7 +92,7 @@ class Command(BaseCommand):
 					print(e)
 
 				try:
-					itemSelected = item.find('span', attrs= {'class': 'c-review__body--original'})
+					itemSelected = item.find('span', attrs= {'class': 'c-review__body'})
 					if itemSelected is not None:
 						positive = itemSelected.text
 				except Exception as e:
