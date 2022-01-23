@@ -8,8 +8,8 @@ from api.supportFunctions.fetchIDFunctions import fetchByCityAndCountry
 class Command(BaseCommand):
     help = 'Helps you add a city to the records'
     def add_arguments(self, parser):
-        parser.add_argument('city', nargs='?', type=str, default="")
         parser.add_argument('country', nargs='?', type=str, default="")
+        parser.add_argument('city', nargs='?', type=str, default="")
         parser.add_argument('destID', nargs='?', type=str, default="")
 
     def handle(self, *args, **options):
