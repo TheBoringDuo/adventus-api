@@ -38,7 +38,7 @@ class Command(BaseCommand):
         cont = True
         offset = 0
         while cont:
-            url1 = 'https://www.booking.com/searchresults.html?dest_id=' + destID + '&dest_type=city&order=bayesian_review_score&offset=' + str(offset)
+            url1 = 'https://www.booking.com/searchresults.html?dest_id=' + destID + '&dest_type=city&offset=' + str(offset)
             response=requests.get(url1,headers=headers)
 
             soup=BeautifulSoup(response.content,'lxml')
