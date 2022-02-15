@@ -11,6 +11,10 @@ from django.http import HttpResponse
 from .permissions import CanAddBusinessObjects, CanEditBusinessObject
 from taggit.models import Tag
 from rest_framework.mixins import UpdateModelMixin
+from api.supportFunctions.findhotel import findHotel
+from api.supportFunctions.runscraper import runScraper
+from api.supportFunctions.fetchIDFunctions import fetchByCityAndCountry
+import json
 
 @api_view(["GET"])
 # @permission_classes((permissions.IsAuthenticated,))
@@ -200,3 +204,35 @@ def connectRestaurantToHotel(request):
     return Response("{}") 
 
 
+
+@api_view(["GET"])
+def getHotelsFromKeywords(request, countryName, cityName, keywords):
+    cityExists = True
+    try:
+        countryObj = Country.objects.get(name__iexact=countryName)
+        try:
+            cityObj = City.objects.get(name__iexact=cityName, country=countryObj)
+        except Exception as e:
+            print(e)
+            cityObj = City.objects.create(name=cityName, country=countryObj)
+            bookingID = fetchByCityAndCountry(cityName, countryName)
+            if bookingID is None:
+                cityObj.delete()
+                return Response("There is no such city", status=418)
+            cityObj.destID = bookingID
+            cityObj.save()
+
+    except Exception as e:
+        print(e)
+        # if the country doesn't exist do not continue - we will add rows for every country
+        # if we let the user add countries by creating a entry for each new one we will get ...
+
+        return Response("There is no such country", status=418)
+
+    ret = findHotel(cityObj, keywords, 2)
+    if ret == 47:
+        runScraper(cityObj, False) # unlimited = False for obvious reasons
+        ret = findHotel(cityObj, keywords, 2)
+        return Response(json.dumps(ret))
+    else:
+        return Response(json.dumps(ret))
