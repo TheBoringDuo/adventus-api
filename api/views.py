@@ -233,6 +233,6 @@ def getHotelsFromKeywords(request, countryName, cityName, keywords):
     if ret == 47:
         runScraper(cityObj, False) # unlimited = False for obvious reasons
         ret = findHotel(cityObj, keywords, 2)
-        return Response(json.dumps(ret))
+        return Response(ret)
     else:
-        return Response(json.dumps(ret))
+        return Response(ret)
