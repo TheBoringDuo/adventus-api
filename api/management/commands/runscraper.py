@@ -48,9 +48,11 @@ class Command(BaseCommand):
                     hotelName = item.find('div', attrs = {'data-testid': 'title'}).string    
                     link = item.find('a', attrs = {'data-testid': 'title-link'})["href"]
                     cont = options['unlimited'] # False by default to stop the loop at 25
-                    
+                    linkPic = item.find('img', attrs={'data-testid': 'image'})["src"]
+                    print(linkPic)
                     hotel, created = Hotel.objects.get_or_create(city=cityObj, name=hotelName)
                     hotel.bookingLink = link
+                    hotel.linkToBookingPic = linkPic
                     hotel.save()
 
                     if hotelName not in allFetched:

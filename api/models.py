@@ -46,6 +46,7 @@ class Restaurant(models.Model):
 class Hotel(models.Model):
     name = models.CharField(max_length=50)
     bookingLink = models.TextField(default="")
+    linkToBookingPic = models.TextField(default="", null=True)
     added_on = models.DateTimeField(auto_now_add=True)
     updated_on = models.DateTimeField(auto_now=True)
     city = models.ForeignKey(City, on_delete=models.PROTECT)
