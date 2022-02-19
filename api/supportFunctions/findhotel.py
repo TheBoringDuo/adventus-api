@@ -153,6 +153,7 @@ def findHotel(cityObj, keywords, pages):
             ret['id'] = hotel.id
             ret['name'] = hotel.name
             ret['bookingLink'] = hotel.bookingLink
+            ret['thumbnail'] = hotel.linkToBookingPic
             to_return.append(ret)
             # self.stdout.write(self.style.SUCCESS("Recommended Hotel: {}, {}".format(getattr( Hotel.objects.get(id=key), 'name' ), getattr( Hotel.objects.get(id=key), 'bookingLink' ))))
 
