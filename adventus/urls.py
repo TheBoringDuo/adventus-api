@@ -44,6 +44,9 @@ urlpatterns = [
     path('update_restaurant/<pk>/', api.RestaurantPartialUpdateView.as_view(), name='update_rest'),
     path('get_rests_by_tags/<cityID>/', api.getRestaurantsByCityAndTags),
     path('link_restaurant/', api.connectRestaurantToHotel),
-    path('findhotels/<countryName>/<cityName>/<keywords>/', api.getHotelsFromKeywords)
+    path('findhotels/<countryName>/<cityName>/<keywords>/', api.getHotelsFromKeywords),
+    path('add_to_favourites/', api.addToFavouriteHotels),
+    path('remove_from_favourites/', api.removeFromFavouriteHotels),
+    path('favourite_hotels/', api.getFavouriteHotels)
 ]
 

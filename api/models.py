@@ -1,3 +1,4 @@
+from unicodedata import decimal
 from django.db import models
 from django.contrib.auth.models import AbstractUser
 import django.contrib.auth.models as authModels
@@ -22,6 +23,7 @@ class City(models.Model):
 class User(AbstractUser):
     email = models.EmailField(unique=True)
     isBusinessClient = models.BooleanField(default=False)
+    favouriteHotels = models.ManyToManyField('Hotel', default=None)
     
     USERNAME_FIELD = AbstractUser.get_email_field_name()
     REQUIRED_FIELDS = ['username', 'first_name', 'last_name']
@@ -47,6 +49,8 @@ class Hotel(models.Model):
     name = models.CharField(max_length=50)
     bookingLink = models.TextField(default="")
     linkToBookingPic = models.TextField(default="", null=True)
+    starRating = models.IntegerField(default=None, null=True)
+    bookingRating = models.DecimalField(default=None, null=True, decimal_places=1, max_digits=2)
     added_on = models.DateTimeField(auto_now_add=True)
     updated_on = models.DateTimeField(auto_now=True)
     city = models.ForeignKey(City, on_delete=models.PROTECT)

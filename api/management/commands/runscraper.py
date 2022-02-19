@@ -50,9 +50,19 @@ class Command(BaseCommand):
                     cont = options['unlimited'] # False by default to stop the loop at 25
                     linkPic = item.find('img', attrs={'data-testid': 'image'})["src"]
                     print(linkPic)
+                    reviewStatus = item.find('div', attrs = {'data-testid': 'review-score'})
+                    element = reviewStatus.select('div[aria-label*="Scored"]')[0]
+                    rating = float(element['aria-label'].split(" ")[1])
+                        
+                    starRatingDiv = item.find('div', attrs={'data-testid': 'rating-stars'})
+                    if starRatingDiv is not None:
+                        starRating = len(starRatingDiv.find_all('span'))
+                    
                     hotel, created = Hotel.objects.get_or_create(city=cityObj, name=hotelName)
                     hotel.bookingLink = link
                     hotel.linkToBookingPic = linkPic
+                    hotel.bookingRating = rating
+                    hotel.starRating = starRating
                     hotel.save()
 
                     if hotelName not in allFetched:

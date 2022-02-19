@@ -6,7 +6,7 @@ from rest_framework import authentication, permissions, generics
 # Create your views here.
 from api.models import Hotel, City, Country, User, Restaurant
 from api.serializers import HotelsSerializer, CitySerializer, RegisterSerializer, BusinessRegisterSerializer, HotelSerializer, RestaurantSerializer, RestaurantsSerializer, RegisterRestaurantSerializer
-from api.serializers import RegisterHotelSerializer, TagsSerializer, LinkRestaurantToHotelSerializer
+from api.serializers import RegisterHotelSerializer, TagsSerializer, LinkRestaurantToHotelSerializer, AddOrRemoveFromFavouritesSerializer
 from django.http import HttpResponse
 from .permissions import CanAddBusinessObjects, CanEditBusinessObject
 from taggit.models import Tag
@@ -233,6 +233,48 @@ def getHotelsFromKeywords(request, countryName, cityName, keywords):
     if ret == 47:
         runScraper(cityObj, False) # unlimited = False for obvious reasons
         ret = findHotel(cityObj, keywords, 2)
-        return Response(ret)
+        serializer = HotelsSerializer(ret, many=True)
+        return Response(serializer.data)
     else:
+        serializer = HotelsSerializer(ret, many=True)
+        return Response(serializer.data)
         return Response(ret)
+
+
+@api_view(["POST"])
+@permission_classes((permissions.IsAuthenticated,))
+def addToFavouriteHotels(request):
+    serializer = AddOrRemoveFromFavouritesSerializer(request.data)
+    user = request.user
+    hotel_id = serializer.data["obj_id"]
+    try:
+        hotel = Hotel.objects.get(id = hotel_id)
+    except:
+        return Response("There is no such hotel", status=404)
+
+    user.favouriteHotels.add(hotel)
+    user.save()
+    return Response("Successful")
+
+@api_view(["POST"])
+@permission_classes((permissions.IsAuthenticated,))
+def removeFromFavouriteHotels(request):
+    serializer = AddOrRemoveFromFavouritesSerializer(request.data)
+    user = request.user
+    hotel_id = serializer.data["obj_id"]
+    try: # TODO: check what happens if the hotel has been deleted - does it show?
+        hotel = Hotel.objects.get(id = hotel_id)
+    except:
+        return Response("There is no such hotel", status=404)
+
+    user.favouriteHotels.remove(hotel)
+    user.save()
+    return Response("Successful")
+
+@api_view(["GET"])
+@permission_classes((permissions.IsAuthenticated,))
+def getFavouriteHotels(request):
+    user = request.user
+    hotels = user.favouriteHotels
+    serializer = HotelsSerializer(hotels, many=True)
+    return Response(serializer.data)
