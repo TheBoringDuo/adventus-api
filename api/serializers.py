@@ -145,6 +145,5 @@ class LinkRestaurantToHotelSerializer(serializers.Serializer):
     hotel_id = serializers.IntegerField()
     restaurant_id = serializers.IntegerField()
 
-
-
-
+class AddOrRemoveFromFavouritesSerializer(serializers.Serializer):
+    obj_id = serializers.IntegerField()

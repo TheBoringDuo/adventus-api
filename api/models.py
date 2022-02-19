@@ -23,6 +23,7 @@ class City(models.Model):
 class User(AbstractUser):
     email = models.EmailField(unique=True)
     isBusinessClient = models.BooleanField(default=False)
+    favouriteHotels = models.ManyToManyField('Hotel', default=None)
     
     USERNAME_FIELD = AbstractUser.get_email_field_name()
     REQUIRED_FIELDS = ['username', 'first_name', 'last_name']
