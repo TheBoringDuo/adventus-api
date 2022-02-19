@@ -233,6 +233,9 @@ def getHotelsFromKeywords(request, countryName, cityName, keywords):
     if ret == 47:
         runScraper(cityObj, False) # unlimited = False for obvious reasons
         ret = findHotel(cityObj, keywords, 2)
-        return Response(ret)
+        serializer = HotelsSerializer(ret, many=True)
+        return Response(serializer.data)
     else:
+        serializer = HotelsSerializer(ret, many=True)
+        return Response(serializer.data)
         return Response(ret)

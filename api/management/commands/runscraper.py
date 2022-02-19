@@ -54,10 +54,15 @@ class Command(BaseCommand):
                     element = reviewStatus.select('div[aria-label*="Scored"]')[0]
                     rating = float(element['aria-label'].split(" ")[1])
                         
+                    starRatingDiv = item.find('div', attrs={'data-testid': 'rating-stars'})
+                    if starRatingDiv is not None:
+                        starRating = len(starRatingDiv.find_all('span'))
+                    
                     hotel, created = Hotel.objects.get_or_create(city=cityObj, name=hotelName)
                     hotel.bookingLink = link
                     hotel.linkToBookingPic = linkPic
                     hotel.bookingRating = rating
+                    hotel.starRating = starRating
                     hotel.save()
 
                     if hotelName not in allFetched:

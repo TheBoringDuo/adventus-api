@@ -145,15 +145,13 @@ def findHotel(cityObj, keywords, pages):
         for i in range(0, len(hotelIds)):
             bestHotels[hotelIds[i]] = similarityRow[i]
 
-        to_return = []
         print(dict(sorted(bestHotels.items(), key=lambda item: item[1], reverse=True)))
+        hotels = []
         for key in dict(sorted(bestHotels.items(), key=lambda item: item[1], reverse=True)):
             ret = dict()
             hotel = Hotel.objects.get(id=key)
-            ret['id'] = hotel.id
-            ret['name'] = hotel.name
-            ret['bookingLink'] = hotel.bookingLink
-            to_return.append(ret)
+            hotels.append(hotel)
             # self.stdout.write(self.style.SUCCESS("Recommended Hotel: {}, {}".format(getattr( Hotel.objects.get(id=key), 'name' ), getattr( Hotel.objects.get(id=key), 'bookingLink' ))))
 
-        return to_return
+        print("here")
+        return hotels

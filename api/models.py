@@ -48,6 +48,7 @@ class Hotel(models.Model):
     name = models.CharField(max_length=50)
     bookingLink = models.TextField(default="")
     linkToBookingPic = models.TextField(default="", null=True)
+    starRating = models.IntegerField(default=None, null=True)
     bookingRating = models.DecimalField(default=None, null=True, decimal_places=1, max_digits=2)
     added_on = models.DateTimeField(auto_now_add=True)
     updated_on = models.DateTimeField(auto_now=True)

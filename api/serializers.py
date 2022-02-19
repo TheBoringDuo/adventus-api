@@ -12,7 +12,7 @@ class HotelsSerializer(TaggitSerializer, serializers.ModelSerializer):
 
     class Meta:
         model = Hotel
-        fields = ['id', 'name', 'tags', 'locLong', 'locLat', 'available', 'bookingLink', 'updated_on']
+        fields = ['id', 'name', 'tags', 'locLong', 'locLat', 'available', 'bookingLink', 'updated_on', 'linkToBookingPic', 'bookingRating', 'starRating']
 
 class HotelSerializer(TaggitSerializer, serializers.ModelSerializer):
     tags = TagListSerializerField()
@@ -20,7 +20,7 @@ class HotelSerializer(TaggitSerializer, serializers.ModelSerializer):
     ownedByID = serializers.IntegerField(source='ownedBy.id', default=-1)
     class Meta:
         model = Hotel
-        fields = ['name', 'tags', 'bookingLink', 'updated_on', 'isFetchedFromBooking', 'description', 'available', 'ownedByName', 'ownedByID', 'locLong', 'locLat']
+        fields = ['name', 'tags', 'bookingLink', 'updated_on', 'isFetchedFromBooking', 'description', 'available', 'ownedByName', 'ownedByID', 'locLong', 'locLat', 'linkToBookingPic', 'bookingRating', 'starRating']
 
 class CitySerializer(serializers.ModelSerializer):
     countryName = serializers.CharField(source='country.name')
