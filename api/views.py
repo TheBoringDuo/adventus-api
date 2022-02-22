@@ -7,7 +7,10 @@ from rest_framework import authentication, permissions, generics
 from api.models import Hotel, City, Country, User, Restaurant
 from api.serializers import HotelsSerializer, CitySerializer, RegisterSerializer, BusinessRegisterSerializer, HotelSerializer, RestaurantSerializer, RestaurantsSerializer, RegisterRestaurantSerializer
 from api.serializers import RegisterHotelSerializer, TagsSerializer, LinkRestaurantToHotelSerializer, AddOrRemoveFromFavouritesSerializer
+from api.serializers import RestaurantsSerializer
 from django.http import HttpResponse
+
+from api.supportFunctions.findrestaurants import findrestaurants
 from .permissions import CanAddBusinessObjects, CanEditBusinessObject
 from taggit.models import Tag
 from rest_framework.mixins import UpdateModelMixin
@@ -238,7 +241,6 @@ def getHotelsFromKeywords(request, countryName, cityName, keywords):
     else:
         serializer = HotelsSerializer(ret, many=True)
         return Response(serializer.data)
-        return Response(ret)
 
 
 @api_view(["POST"])
@@ -262,7 +264,7 @@ def removeFromFavouriteHotels(request):
     serializer = AddOrRemoveFromFavouritesSerializer(request.data)
     user = request.user
     hotel_id = serializer.data["obj_id"]
-    try: # TODO: check what happens if the hotel has been deleted - does it show?
+    try: # we don't have to worry about deleted hotels as it deletes the reference as well
         hotel = Hotel.objects.get(id = hotel_id)
     except:
         return Response("There is no such hotel", status=404)
@@ -277,4 +279,33 @@ def getFavouriteHotels(request):
     user = request.user
     hotels = user.favouriteHotels
     serializer = HotelsSerializer(hotels, many=True)
+    return Response(serializer.data)
+
+@api_view(["GET"])
+def getRestaurantsByNames(request, countryName, cityName):
+    cityExists = True
+    try:
+        countryObj = Country.objects.get(name__iexact=countryName)
+        try:
+            cityObj = City.objects.get(name__iexact=cityName, country=countryObj)
+        except Exception as e:
+            print(e)
+            cityObj = City.objects.create(name=cityName, country=countryObj)
+            bookingID = fetchByCityAndCountry(cityName, countryName)
+            if bookingID is None:
+                cityObj.delete()
+                return Response("There is no such city", status=418)
+            cityObj.destID = bookingID
+            cityObj.save()
+
+    except Exception as e:
+        print(e)
+        # if the country doesn't exist do not continue - we will add rows for every country
+        # if we let the user add countries by creating a entry for each new one we will get ...
+
+        return Response("There is no such country", status=418)
+
+    ret = findrestaurants(cityObj)
+
+    serializer = RestaurantsSerializer(ret, many=True)
     return Response(serializer.data)

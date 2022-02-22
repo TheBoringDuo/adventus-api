@@ -1,5 +1,5 @@
 *.sqlite3
-tripplanning/secret.py
+adventus/secret.py
 apienv/
 *.pyc
 *.pyo

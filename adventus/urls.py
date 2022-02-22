@@ -47,6 +47,7 @@ urlpatterns = [
     path('findhotels/<countryName>/<cityName>/<keywords>/', api.getHotelsFromKeywords),
     path('add_to_favourites/', api.addToFavouriteHotels),
     path('remove_from_favourites/', api.removeFromFavouriteHotels),
-    path('favourite_hotels/', api.getFavouriteHotels)
+    path('favourite_hotels/', api.getFavouriteHotels),
+    path('get_restaurants/<countryName>/<cityName>/', api.getRestaurantsByNames)
 ]
 

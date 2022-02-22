@@ -34,7 +34,7 @@ class RestaurantSerializer(TaggitSerializer, serializers.ModelSerializer):
     ownedByID = serializers.IntegerField(source='ownedBy.id', default=-1)
     class Meta:
         model = Restaurant
-        fields = ['name', 'tags', 'updated_on', 'description', 'available', 'ownedByName', 'ownedByID', 'locLong', 'locLat']
+        fields = ['name', 'tags', 'updated_on', 'description', 'available', 'ownedByName', 'ownedByID', 'locLong', 'locLat', 'tripadvisorLink', 'isFetchedFromTripadvisor']
 
 
 class RestaurantsSerializer(TaggitSerializer, serializers.ModelSerializer):
@@ -42,7 +42,7 @@ class RestaurantsSerializer(TaggitSerializer, serializers.ModelSerializer):
 
     class Meta:
         model = Restaurant
-        fields = ['id', 'name', 'tags', 'locLong', 'locLat', 'available', 'updated_on']
+        fields = ['id', 'name', 'tags', 'locLong', 'locLat', 'available', 'updated_on', 'tripadvisorLink', 'isFetchedFromTripadvisor']
 
 class TagsSerializer(serializers.ModelSerializer):
     

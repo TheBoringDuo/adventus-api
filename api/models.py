@@ -33,7 +33,9 @@ class User(AbstractUser):
 class Restaurant(models.Model):
     name = models.CharField(max_length=50)
     added_on = models.DateTimeField(auto_now_add=True)
+    tripadvisorLink = models.TextField(default="")
     updated_on = models.DateTimeField(auto_now=True)
+    isFetchedFromTripadvisor = models.BooleanField(default=True)
     city = models.ForeignKey(City, on_delete=models.PROTECT)
     description = models.TextField()
     available = models.BooleanField(default=True) # a field that the business clients can edit - if false, it will be listed at the bottom
