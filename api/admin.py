@@ -2,7 +2,7 @@ import imp
 from django.contrib import admin
 from .models import User
 from django.contrib.auth.admin import UserAdmin
-from models import Country, City, Restaurant, Hotel
+from api.models import Country, City, Restaurant, Hotel
 
 # Register your models here.
 
