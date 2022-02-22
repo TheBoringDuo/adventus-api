@@ -152,4 +152,4 @@ class AddOrRemoveFromFavouritesSerializer(serializers.Serializer):
 class ProfileSerializer(serializers.ModelSerializer):
     class Meta:
         model = User
-        fields = ['id', 'first_name', 'last_name', 'email', 'date_joined']
+        fields = ['id', 'first_name', 'last_name', 'email', 'date_joined', 'isBusinessClient']
