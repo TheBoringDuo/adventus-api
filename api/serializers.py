@@ -147,3 +147,9 @@ class LinkRestaurantToHotelSerializer(serializers.Serializer):
 
 class AddOrRemoveFromFavouritesSerializer(serializers.Serializer):
     obj_id = serializers.IntegerField()
+
+
+class ProfileSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = User
+        fields = ['id', 'first_name', 'last_name', 'email', 'date_joined']

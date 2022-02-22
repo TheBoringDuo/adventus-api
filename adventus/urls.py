@@ -14,7 +14,7 @@ Including another URLconf
     2. Add a URL to urlpatterns:  path('blog/', include('blog.urls'))
 """
 from django.contrib import admin
-from django.urls import path
+from django.urls import path, include
 import api.views as api
 
 from rest_framework_simplejwt.views import (
@@ -48,6 +48,8 @@ urlpatterns = [
     path('add_to_favourites/', api.addToFavouriteHotels),
     path('remove_from_favourites/', api.removeFromFavouriteHotels),
     path('favourite_hotels/', api.getFavouriteHotels),
-    path('get_restaurants/<countryName>/<cityName>/', api.getRestaurantsByNames)
+    path('get_restaurants/<countryName>/<cityName>/', api.getRestaurantsByNames),
+    path('profile/', api.getProfile),
+    path('api/password_reset/', include('django_rest_passwordreset.urls'))
 ]
 

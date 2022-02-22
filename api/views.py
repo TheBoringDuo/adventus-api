@@ -7,7 +7,7 @@ from rest_framework import authentication, permissions, generics
 from api.models import Hotel, City, Country, User, Restaurant
 from api.serializers import HotelsSerializer, CitySerializer, RegisterSerializer, BusinessRegisterSerializer, HotelSerializer, RestaurantSerializer, RestaurantsSerializer, RegisterRestaurantSerializer
 from api.serializers import RegisterHotelSerializer, TagsSerializer, LinkRestaurantToHotelSerializer, AddOrRemoveFromFavouritesSerializer
-from api.serializers import RestaurantsSerializer
+from api.serializers import RestaurantsSerializer, ProfileSerializer
 from django.http import HttpResponse
 
 from api.supportFunctions.findrestaurants import findrestaurants
@@ -309,3 +309,9 @@ def getRestaurantsByNames(request, countryName, cityName):
 
     serializer = RestaurantsSerializer(ret, many=True)
     return Response(serializer.data)
+
+@api_view(["GET"])
+@permission_classes((permissions.IsAuthenticated,))
+def getProfile(request):
+    user = request.user
+    return Response(ProfileSerializer(user).data)
