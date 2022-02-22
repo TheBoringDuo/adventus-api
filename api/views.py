@@ -209,7 +209,7 @@ def connectRestaurantToHotel(request):
 
 
 @api_view(["GET"])
-def getHotelsFromKeywords(request, countryName, cityName, keywords):
+def getHotelsFromKeywords(request, countryName, cityName, keywords=""):
     cityExists = True
     try:
         countryObj = Country.objects.get(name__iexact=countryName)
@@ -231,6 +231,13 @@ def getHotelsFromKeywords(request, countryName, cityName, keywords):
         # if we let the user add countries by creating a entry for each new one we will get ...
 
         return Response("There is no such country", status=418)
+
+    if keywords == "":
+        hotels = Hotel.objects.filter(city=cityObj).order_by("-bookingRating")
+        if hotels.count() == 0:
+            runScraper(cityObj, False)
+        serializer = HotelsSerializer(hotels, many=True)
+        return Response(serializer.data)
 
     ret = findHotel(cityObj, keywords, 2)
     if ret == 47:
