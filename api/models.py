@@ -100,7 +100,7 @@ def password_reset_token_created(sender, instance, reset_password_token, *args, 
 
     # render email text
     
-    email_plaintext_message = "https://adventus.ml/password_reset/?token={}".format(reset_password_token.key)
+    email_plaintext_message = "https://adventus.ml/password_reset?token={}".format(reset_password_token.key)
 
 
     msg = EmailMultiAlternatives(

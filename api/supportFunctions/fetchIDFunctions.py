@@ -12,9 +12,11 @@ def fetchByCityAndCountry(cityName, countryName):
     csrfToken = str(soup).split("'X-Booking-CSRF': '", 1)[1].split("'",1)[0]
 
     headers["X-Booking-Csrf"] = csrfToken
-    headers["X-Booking-Client-Info"] = "wqhje213213jhk123hRandomshit"
+    headers["X-Booking-Client-Info"] = "wqhje213213jhk123h"
 
     url = "https://www.booking.com/autocomplete_csrf?v=1&lang=en-us&aid=eedwqe&pid=ku123dd213&term=" + cityName + ",%20" + countryName
+    if countryName.lower() == "customsearch": # Allows for requests where we can't find the country in the list of countries
+        url = "https://www.booking.com/autocomplete_csrf?v=1&lang=en-us&aid=eedwqe&pid=ku123dd213&term=" + cityName
 
     response2 = s.get(url, headers=headers)
 
