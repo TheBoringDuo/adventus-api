@@ -60,4 +60,4 @@ urlpatterns = [
 ]
 
 if settings.DEBUG is False:
-    urlpatterns += path('', api.indexInProd)
+    urlpatterns.append(path('', api.indexInProd))
