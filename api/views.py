@@ -21,7 +21,7 @@ import json
 from django.conf import settings
 
 def indexInProd(request):
-    redirect("https://github.com/TheBoringDuo/adventus-api")
+    return redirect("https://github.com/TheBoringDuo/adventus-api")
 
 @api_view(["GET"])
 # @permission_classes((permissions.IsAuthenticated,))
