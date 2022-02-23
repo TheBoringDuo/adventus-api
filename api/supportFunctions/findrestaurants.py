@@ -2,11 +2,21 @@ from bs4 import BeautifulSoup
 from django.core.management.base import BaseCommand, CommandError
 from api.models import Hotel, Country, City, Restaurant
 import requests
+import asyncio
 import json
+import numpy as np
+from aiohttp import ClientSession
+# from sklearn.feature_extraction import text
+from sklearn.feature_extraction.text import CountVectorizer
+# import pandas as pd
+from sklearn.metrics.pairwise import cosine_similarity
 
 
 def findrestaurants(cityObj):
-    location = cityObj.name + " " + cityObj.country.name
+    if cityObj.country.name.lower() == "customsearch":
+        location = cityObj.name
+    else:
+        location = cityObj.name + " " + cityObj.country.name
 
     headers = {'User-Agent':'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/91.0.4472.114 Safari/537.36', "X-Requested-By": "andsowesucceded"}
     s = requests.Session()
@@ -67,3 +77,136 @@ def findrestaurants(cityObj):
         restaurant.save()
         to_return.append(restaurant)
     return to_return
+
+headers = {'User-Agent':'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/91.0.4472.114 Safari/537.36'}
+async def fetch(restaurantobj, session):
+    url = restaurantobj["restaurant_link"]
+    print(url)
+    restaurant_id = restaurantobj["restaurant_id"]
+    r = dict()
+    print("Starting to fetch", restaurant_id)
+    async with session.get(url, headers=headers) as response:
+        print("y", restaurant_id)
+        r['response'] = await response.text()
+        print("Fetched", restaurant_id)
+        r['restaurant_id'] = restaurant_id
+        return r
+
+async def as_completed_async(futures):
+    loop = asyncio.get_event_loop()
+    wrappers = []
+    for fut in futures:
+        assert isinstance(fut, asyncio.Future)  # we need Future or Task
+        # Wrap the future in one that completes when the original does,
+        # and whose result is the original future object.
+        wrapper = loop.create_future()
+        fut.add_done_callback(wrapper.set_result)
+        wrappers.append(wrapper)
+    for next_completed in asyncio.as_completed(wrappers):
+        # awaiting next_completed will dereference the wrapper and get
+        # the original future (which we know has completed), so we can
+        # just yield that
+        yield await next_completed
+
+
+async def do_as_completed(restaurants, restaurantDescription, restaurantIds):
+    to_exclude = []
+    loop = asyncio.get_event_loop()
+    async with ClientSession() as session:
+        print(session)
+        tasks = [loop.create_task(fetch(restaurantobj, session)) for restaurantobj in restaurants]
+        async for future in as_completed_async(tasks):
+            try:
+                res = await future
+            except Exception as e:
+                res = e
+        
+            response = res['response']
+            restaurant_id = res['restaurant_id']
+ 
+            soup=BeautifulSoup(response, 'lxml')
+            base = soup.find_all("div", class_="listContainer")[0]
+
+            for item in base.find_all("div", {"class": "reviewSelector"}):
+                title = ''
+                positive = ''
+
+                try:
+                    itemSelected = item.find('a', {"class": "title"}).select_one("span")
+                    if itemSelected is not None:
+                        title = itemSelected.text
+                except Exception as e:
+                    # raise e
+                    print(e)
+
+                try:
+                    itemSelected = item.find("p", {"class": "partial_entry"})
+                    if itemSelected is not None:
+                        positive = itemSelected.text
+                except Exception as e:
+                    print(e)
+
+                restaurantDescription[restaurant_id] += title + " " + positive
+            print("Done with", restaurant_id)
+        return restaurantDescription, restaurantIds, to_exclude
+
+
+def findRestaurantsFromKeywords(cityObj, keywords, pages):
+    loop = asyncio.new_event_loop()
+    asyncio.set_event_loop(loop)    
+    restaurants = Restaurant.objects.filter(city=cityObj)
+    if len(restaurants) == 0:
+        return 47 # a random status code I made up on the spot - get bent
+    restaurantDescription = dict()
+    restaurantIds = []
+    restaurants = restaurants.exclude(tripadvisorLink=None)
+    restaurant_count = restaurants.count()
+    offset = 0
+    while restaurant_count > 0 and offset < pages*15:
+        print("Count", restaurant_count)
+        restaurantsobj = [] # need a separate hotelsobj to pass to the async function as django cannot handle working with models in async
+        for restaurant in restaurants:
+            if getattr(restaurant, 'id') not in restaurantIds:
+                restaurantIds.append(getattr(restaurant, 'id'))
+            if getattr(restaurant, 'id') not in restaurantDescription:
+                restaurantDescription[getattr(restaurant, 'id')] = ''
+
+            try:
+                url = getattr(restaurant, 'tripadvisorLink')
+                if offset != 0:
+                    urlArray = url.split('-Reviews-')
+                    url = urlArray[0] + '-Reviews-or' + offset + urlArray[1]
+                restaurantObj = dict()
+                restaurantObj["restaurant_id"] = restaurant.id
+                restaurantObj["restaurant_link"] = url
+                restaurantsobj.append(restaurantObj)
+            except:
+                restaurants = restaurants.exclude(id=restaurant.id)
+        future = asyncio.ensure_future(do_as_completed(restaurantsobj, restaurantDescription, restaurantIds))
+        loop.run_until_complete(future)
+        restaurantDescription, restaurantIds, to_exclude = future.result()
+        restaurants = restaurants.exclude(id__in=to_exclude)  
+        offset += 15
+        restaurant_count = restaurants.count()
+        descriptionsRaw = []
+        for key in restaurantDescription:
+            descriptionsRaw.append(restaurantDescription[key])
+
+        countVectorizer = CountVectorizer()
+        sparseMatrix = countVectorizer.fit_transform(descriptionsRaw)
+        sparseMatrixKeywords = countVectorizer.transform([keywords])
+        similarityRow = cosine_similarity(sparseMatrix, sparseMatrixKeywords)
+        bestRestaurants = dict()
+        for i in range(0, len(restaurantIds)):
+            bestRestaurants[restaurantIds[i]] = similarityRow[i]
+
+        print(dict(sorted(bestRestaurants.items(), key=lambda item: item[1], reverse=True)))
+        restaurants = []
+        for key in dict(sorted(bestRestaurants.items(), key=lambda item: item[1], reverse=True)):
+            ret = dict()
+            restaurant = Restaurant.objects.get(id=key)
+            restaurants.append(restaurant)
+            # self.stdout.write(self.style.SUCCESS("Recommended Hotel: {}, {}".format(getattr( Hotel.objects.get(id=key), 'name' ), getattr( Hotel.objects.get(id=key), 'bookingLink' ))))
+
+        print("here")
+        return restaurants

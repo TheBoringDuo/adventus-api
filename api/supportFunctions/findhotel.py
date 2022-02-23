@@ -19,6 +19,7 @@ headers = {'User-Agent':'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/5
 
 async def fetch(hotelobj, session):
     url = hotelobj["hotel_link"]
+    print(url)
     hotel_id = hotelobj["hotel_id"]
     r = dict()
     print("Starting to fetch", hotel_id)
