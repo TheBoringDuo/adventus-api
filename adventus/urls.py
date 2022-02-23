@@ -16,6 +16,7 @@ Including another URLconf
 from django.contrib import admin
 from django.urls import path, include
 import api.views as api
+from django.conf import settings
 
 from rest_framework_simplejwt.views import (
     TokenObtainPairView,
@@ -58,3 +59,5 @@ urlpatterns = [
     path('api/password_reset/', include('django_rest_passwordreset.urls'))
 ]
 
+if settings.DEBUG is False:
+    urlpatterns += path('', api.indexInProd)

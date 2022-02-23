@@ -5,7 +5,9 @@ import requests
 import asyncio
 import json
 import numpy as np
+import time
 from aiohttp import ClientSession
+import aiohttp
 # from sklearn.feature_extraction import text
 from sklearn.feature_extraction.text import CountVectorizer
 # import pandas as pd
@@ -78,7 +80,7 @@ def findrestaurants(cityObj):
         to_return.append(restaurant)
     return to_return
 
-headers = {'User-Agent':'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/91.0.4472.114 Safari/537.36'}
+headers = {'User-Agent':'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/91.0.4472.114 Safari/537.36', 'Referer': 'https://www.tripadvisor.com/'}
 async def fetch(restaurantobj, session):
     url = restaurantobj["restaurant_link"]
     print(url)

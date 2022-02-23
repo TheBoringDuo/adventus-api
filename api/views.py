@@ -1,4 +1,4 @@
-from django.shortcuts import render
+from django.shortcuts import redirect, render
 from rest_framework.views import APIView
 from rest_framework.decorators import api_view, permission_classes
 from rest_framework.response import Response
@@ -18,7 +18,10 @@ from api.supportFunctions.findhotel import findHotel
 from api.supportFunctions.runscraper import runScraper
 from api.supportFunctions.fetchIDFunctions import fetchByCityAndCountry
 import json
+from django.conf import settings
 
+def indexInProd(request):
+    redirect("https://github.com/TheBoringDuo/adventus-api")
 
 @api_view(["GET"])
 # @permission_classes((permissions.IsAuthenticated,))
