@@ -20,11 +20,11 @@ def findrestaurants(cityObj):
     else:
         location = cityObj.name + " " + cityObj.country.name
 
-    headers = {'User-Agent':'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/91.0.4472.114 Safari/537.36', "X-Requested-By": "andsowesucceded"}
+    headers = {'User-Agent':'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/91.0.4472.114 Safari/537.36'}
     s = requests.Session()
-    r = s.get("http://www.tripadvisor.com", headers=headers)
+    r = s.get("https://www.tripadvisor.com/", headers=headers)
     headersForAutoCompletion = {'User-Agent':'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/91.0.4472.114 Safari/537.36', "X-Requested-By": "andsowesucceded", 'Content-type': 'application/json', "Referer": "https://www.tripadvisor.com/"}
-
+    r.text
     parameters = ""
     url1 = 'https://www.tripadvisor.com/data/graphql/ids'
     postDATA = [
@@ -51,9 +51,10 @@ def findrestaurants(cityObj):
             }
         }
     ]
+    print("sending r")
 
     response = s.post('https://www.tripadvisor.com/data/graphql/ids', headers=headersForAutoCompletion, json=postDATA, timeout=5)
-
+    print("got response")
 
     linkData = json.loads(response.text)
 
