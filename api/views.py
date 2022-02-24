@@ -221,13 +221,14 @@ def getHotelsFromKeywords(request, countryName, cityName, keywords=""):
             cityObj = City.objects.get(name__iexact=cityName, country=countryObj)
         except Exception as e:
             print(e)
-            cityObj = City.objects.create(name=cityName, country=countryObj)
             bookingID = fetchByCityAndCountry(cityName, countryName)
             if bookingID is None:
-                cityObj.delete()
                 return Response("There is no such city", status=418)
-            cityObj.destID = bookingID
-            cityObj.save()
+            try:
+                cityObj = City.objects.get(destID=bookingID)
+            except:
+                cityObj = City.objects.create(name=cityName, country=countryObj, destID=bookingID)
+
 
     except Exception as e:
         print(e)
