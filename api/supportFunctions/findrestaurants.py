@@ -235,7 +235,9 @@ def findRestaurantsFromKeywordsSync(cityObj, keywords, pages):
     offset = 0
     while restaurant_count > 0 and offset < pages*15:
         print("Count", restaurant_count)
-        for restaurant in restaurants:
+        for count, restaurant in enumerate(restaurants):
+            if count > 15:
+                break
             if getattr(restaurant, 'id') not in restaurantIds:
                 restaurantIds.append(getattr(restaurant, 'id'))
             if getattr(restaurant, 'id') not in restaurantDescription:
