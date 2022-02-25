@@ -1,0 +1,19 @@
+1645780773496	geckodriver	INFO	Listening on 127.0.0.1:34967
+1645780773504	mozrunner::runner	INFO	Running command: "/var/lib/snapd/snap/bin/firefox" "--marionette" "-no-remote" "-profile" "/tmp/rust_mozprofileLLtBdm"
+WARNING: cgroup v2 is not fully supported yet, proceeding with partial confinement
+Gtk-Message: 09:19:33.798: Failed to load module "canberra-gtk-module"
+Gtk-Message: 09:19:34.240: Failed to load module "colorreload-gtk-module"
+Gtk-Message: 09:19:34.240: Failed to load module "window-decorations-gtk-module"
+[GFX1-]: glxtest: libEGL missing
+[GFX1-]: glxtest: libEGL missing
+1645780781088	geckodriver	INFO	Listening on 127.0.0.1:60783
+1645780781094	mozrunner::runner	INFO	Running command: "/var/lib/snapd/snap/bin/firefox" "--marionette" "-no-remote" "-profile" "/tmp/rust_mozprofileMqf0eV"
+WARNING: cgroup v2 is not fully supported yet, proceeding with partial confinement
+Gtk-Message: 09:19:41.353: Failed to load module "canberra-gtk-module"
+Gtk-Message: 09:19:41.454: Failed to load module "colorreload-gtk-module"
+Gtk-Message: 09:19:41.455: Failed to load module "window-decorations-gtk-module"
+[GFX1-]: glxtest: libEGL missing
+[GFX1-]: glxtest: libEGL missing
+
+###!!! [Child][RunMessage] Error: Channel closing: too late to send/recv, messages will be lost
+

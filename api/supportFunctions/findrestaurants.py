@@ -12,6 +12,13 @@ import aiohttp
 from sklearn.feature_extraction.text import CountVectorizer
 # import pandas as pd
 from sklearn.metrics.pairwise import cosine_similarity
+from selenium import webdriver
+from webdriver_manager.chrome import ChromeDriverManager
+from seleniumrequests import Chrome
+import csv
+import requests
+import re
+import time
 
 
 def findrestaurants(cityObj):
@@ -189,6 +196,76 @@ def findRestaurantsFromKeywords(cityObj, keywords, pages):
         loop.run_until_complete(future)
         restaurantDescription, restaurantIds, to_exclude = future.result()
         restaurants = restaurants.exclude(id__in=to_exclude)  
+        offset += 15
+        restaurant_count = restaurants.count()
+        descriptionsRaw = []
+        for key in restaurantDescription:
+            descriptionsRaw.append(restaurantDescription[key])
+
+        countVectorizer = CountVectorizer()
+        sparseMatrix = countVectorizer.fit_transform(descriptionsRaw)
+        sparseMatrixKeywords = countVectorizer.transform([keywords])
+        similarityRow = cosine_similarity(sparseMatrix, sparseMatrixKeywords)
+        bestRestaurants = dict()
+        for i in range(0, len(restaurantIds)):
+            bestRestaurants[restaurantIds[i]] = similarityRow[i]
+
+        print(dict(sorted(bestRestaurants.items(), key=lambda item: item[1], reverse=True)))
+        restaurants = []
+        for key in dict(sorted(bestRestaurants.items(), key=lambda item: item[1], reverse=True)):
+            ret = dict()
+            restaurant = Restaurant.objects.get(id=key)
+            restaurants.append(restaurant)
+            # self.stdout.write(self.style.SUCCESS("Recommended Hotel: {}, {}".format(getattr( Hotel.objects.get(id=key), 'name' ), getattr( Hotel.objects.get(id=key), 'bookingLink' ))))
+
+        print("here")
+        return restaurants
+
+    
+
+def findRestaurantsFromKeywordsSync(cityObj, keywords, pages):
+    restaurants = Restaurant.objects.filter(city=cityObj)
+    if len(restaurants) == 0:
+        return 47 # a random status code I made up on the spot - get bent
+    restaurantDescription = dict()
+    restaurantIds = []
+    restaurants = restaurants.exclude(tripadvisorLink=None)
+    restaurant_count = restaurants.count()
+    offset = 0
+    while restaurant_count > 0 and offset < pages*15:
+        print("Count", restaurant_count)
+        for restaurant in restaurants:
+            if getattr(restaurant, 'id') not in restaurantIds:
+                restaurantIds.append(getattr(restaurant, 'id'))
+            if getattr(restaurant, 'id') not in restaurantDescription:
+                restaurantDescription[getattr(restaurant, 'id')] = ''
+            link = restaurant.tripadvisorLink
+            r = requests.get(link)
+            soup=BeautifulSoup(r.content, 'lxml')
+            base = soup.find_all("div", class_="listContainer")[0]
+
+            for item in base.find_all("div", {"class": "reviewSelector"}):
+                title = ''
+                positive = ''
+
+                try:
+                    itemSelected = item.find('a', {"class": "title"}).select_one("span")
+                    if itemSelected is not None:
+                        title = itemSelected.text
+                except Exception as e:
+                    # raise e
+                    print(e)
+
+                try:
+                    itemSelected = item.find("p", {"class": "partial_entry"})
+                    if itemSelected is not None:
+                        positive = itemSelected.text
+                except Exception as e:
+                    print(e)
+                
+                restaurantDescription[restaurant.id] += title + " " + positive
+            print("Done with", restaurant.id)
+
         offset += 15
         restaurant_count = restaurants.count()
         descriptionsRaw = []

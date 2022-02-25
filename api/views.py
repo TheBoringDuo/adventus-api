@@ -10,7 +10,7 @@ from api.serializers import RegisterHotelSerializer, TagsSerializer, LinkRestaur
 from api.serializers import RestaurantsSerializer, ProfileSerializer
 from django.http import HttpResponse
 
-from api.supportFunctions.findrestaurants import findrestaurants, findRestaurantsFromKeywords   
+from api.supportFunctions.findrestaurants import findrestaurants, findRestaurantsFromKeywords, findRestaurantsFromKeywordsSync   
 from .permissions import CanAddBusinessObjects, CanEditBusinessObject
 from taggit.models import Tag
 from rest_framework.mixins import UpdateModelMixin
@@ -359,10 +359,10 @@ def getRestaurantsFromKeywords(request, countryName, cityName, keywords=""):
         serializer = RestaurantsSerializer(restaurants, many=True)
         return Response(serializer.data)
 
-    ret = findRestaurantsFromKeywords(cityObj, keywords, 2)
+    ret = findRestaurantsFromKeywordsSync(cityObj, keywords, 2)
     if ret == 47:
         findrestaurants(cityObj) # unlimited = False for obvious reasons
-        ret = findRestaurantsFromKeywords(cityObj, keywords, 2)
+        ret = findRestaurantsFromKeywordsSync(cityObj, keywords, 2)
         serializer = RestaurantsSerializer(ret, many=True)
         return Response(serializer.data)
     else:
