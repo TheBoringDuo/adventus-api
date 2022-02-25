@@ -242,6 +242,10 @@ def findRestaurantsFromKeywordsSync(cityObj, keywords, pages):
             link = restaurant.tripadvisorLink
             r = requests.get(link, headers=headers)
             soup=BeautifulSoup(r.content, 'lxml')
+
+            picLink = soup.find("img", {"class": "basicImg"})["data-lazyurl"]
+            restaurant.linkToTripadvisorPic = picLink
+
             base = soup.find_all("div", class_="listContainer")[0]
 
             for item in base.find_all("div", {"class": "reviewSelector"}):
@@ -262,10 +266,12 @@ def findRestaurantsFromKeywordsSync(cityObj, keywords, pages):
                         positive = itemSelected.text
                 except Exception as e:
                     print(e)
+
                 
                 restaurantDescription[restaurant.id] += title + " " + positive
             print("Done with", restaurant.id)
 
+        restaurants.save()
         offset += 15
         restaurant_count = restaurants.count()
         descriptionsRaw = []

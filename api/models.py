@@ -41,6 +41,7 @@ class User(AbstractUser):
 class Restaurant(models.Model):
     name = models.CharField(max_length=50)
     added_on = models.DateTimeField(auto_now_add=True)
+    linkToTripadvisorPic = models.TextField(default="", null=True)
     tripadvisorLink = models.TextField(default="")
     updated_on = models.DateTimeField(auto_now=True)
     isFetchedFromTripadvisor = models.BooleanField(default=True)
