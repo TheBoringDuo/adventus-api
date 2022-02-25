@@ -224,6 +224,7 @@ def findRestaurantsFromKeywords(cityObj, keywords, pages):
     
 
 def findRestaurantsFromKeywordsSync(cityObj, keywords, pages):
+    headers = {'User-Agent':'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/91.0.4472.114 Safari/537.36'}
     restaurants = Restaurant.objects.filter(city=cityObj)
     if len(restaurants) == 0:
         return 47 # a random status code I made up on the spot - get bent
@@ -240,7 +241,7 @@ def findRestaurantsFromKeywordsSync(cityObj, keywords, pages):
             if getattr(restaurant, 'id') not in restaurantDescription:
                 restaurantDescription[getattr(restaurant, 'id')] = ''
             link = restaurant.tripadvisorLink
-            r = requests.get(link)
+            r = requests.get(link, headers=headers)
             soup=BeautifulSoup(r.content, 'lxml')
             base = soup.find_all("div", class_="listContainer")[0]
 
