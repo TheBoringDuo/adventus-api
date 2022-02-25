@@ -12,9 +12,6 @@ import aiohttp
 from sklearn.feature_extraction.text import CountVectorizer
 # import pandas as pd
 from sklearn.metrics.pairwise import cosine_similarity
-from selenium import webdriver
-from webdriver_manager.chrome import ChromeDriverManager
-from seleniumrequests import Chrome
 import csv
 import requests
 import re
