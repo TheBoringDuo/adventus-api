@@ -56,7 +56,8 @@ urlpatterns = [
     path('favourite_hotels/', api.getFavouriteHotels),
     path('get_restaurants/<countryName>/<cityName>/', api.getRestaurantsByNames),
     path('profile/', api.getProfile),
-    path('api/password_reset/', include('django_rest_passwordreset.urls'))
+    path('api/password_reset/', include('django_rest_passwordreset.urls')),
+    path('testGo/', api.testGoView)
 ]
 
 if settings.DEBUG is False:

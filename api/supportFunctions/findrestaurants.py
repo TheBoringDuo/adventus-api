@@ -16,6 +16,131 @@ import csv
 import requests
 import re
 import time
+import subprocess
+import base64
+
+getlistLoc = "api/supportFunctions/goexecs/getlist"
+getreviewsLoc = "api/supportFunctions/goexecs/getreviews"
+geturlsLoc = "api/supportFunctions/goexecs/geturls"
+
+def findrestaurantsGo(cityObj):
+    if cityObj.country.name.lower() == "customsearch":
+        location = cityObj.name
+    else:
+        location = cityObj.name + " " + cityObj.country.name
+
+    result = subprocess.run([geturlsLoc, location], stdout=subprocess.PIPE).stdout
+    linkData = json.loads(result)
+    restaurantsURL = linkData[0]["data"]["Typeahead_autocomplete"]["results"][0]["details"]["RESTAURANTS_URL"]
+    
+    result = subprocess.run([getlistLoc, restaurantsURL], stdout=subprocess.PIPE).stdout
+    soup = BeautifulSoup(result, 'lxml')
+
+    mainResDiv = soup.find('div', {"data-test-target": "restaurants-list"})
+
+    to_return = []
+
+    for item in mainResDiv.select('div[data-test*="list_item"]'):
+        a = item.find('a', {"class": 'bHGqj Cj b'}) # not the best practice as the class names are automatically generated and can change
+        # but there is nothing we can do about this as thjere is no other way
+        try: # this part of the code will remove the sponsored restaurant
+            int(a.contents[0])
+        except:
+            continue
+        name = a.contents[-1]
+        link = a["href"]
+        restaurant, created = Restaurant.objects.get_or_create(city=cityObj, name=name)
+        restaurant.tripadvisorLink = "https://www.tripadvisor.com" + link
+        restaurant.save()
+        to_return.append(restaurant)
+    return to_return
+
+
+
+def findRestaurantsFromKeywordsGo(cityObj, keywords):
+    restaurants = Restaurant.objects.filter(city=cityObj)
+    if len(restaurants) == 0:
+        return 47 # a random status code I made up on the spot - get bent
+    restaurantDescription = dict()
+    restaurantIds = []
+    restaurants = restaurants.exclude(tripadvisorLink=None)
+    restaurant_count = restaurants.count()
+    offset = 0
+
+    print("Count", restaurant_count)
+    restaurantsobj = [] # need a separate hotelsobj to pass to the async function as django cannot handle working with models in async
+    for restaurant in restaurants:
+        if getattr(restaurant, 'id') not in restaurantIds:
+            restaurantIds.append(getattr(restaurant, 'id'))
+        if getattr(restaurant, 'id') not in restaurantDescription:
+            restaurantDescription[getattr(restaurant, 'id')] = ''
+
+        try:
+            url = getattr(restaurant, 'tripadvisorLink')
+            if offset != 0:
+                urlArray = url.split('-Reviews-')
+                url = urlArray[0] + '-Reviews-or' + offset + urlArray[1]
+            restaurantObj = dict()
+            restaurantObj["id"] = restaurant.id
+            restaurantObj["url"] = url
+            restaurantsobj.append(restaurantObj)
+        except:
+            restaurants = restaurants.exclude(id=restaurant.id)
+
+    ## send restaurantsobj to getreviews
+    result = subprocess.run([getreviewsLoc, json.dumps(restaurantsobj)], stdout=subprocess.PIPE).stdout
+
+    results = json.loads(result)
+    for restaurant in results:
+        print(restaurant.keys())
+        output = base64.b64decode(restaurant['content'])
+        soup=BeautifulSoup(output, 'lxml')
+        base = soup.find_all("div", class_="listContainer")[0]
+
+        for item in base.find_all("div", {"class": "reviewSelector"}):
+            title = ''
+            positive = ''
+
+            try:
+                itemSelected = item.find('a', {"class": "title"}).select_one("span")
+                if itemSelected is not None:
+                    title = itemSelected.text
+            except Exception as e:
+                # raise e
+                print(e)
+
+            try:
+                itemSelected = item.find("p", {"class": "partial_entry"})
+                if itemSelected is not None:
+                    positive = itemSelected.text
+            except Exception as e:
+                print(e)
+
+            restaurantDescription[restaurant['id']] += title + " " + positive
+        print("Done with", restaurant['id'])
+    restaurant_count = restaurants.count()
+    descriptionsRaw = []
+    for key in restaurantDescription:
+        descriptionsRaw.append(restaurantDescription[key])
+
+    countVectorizer = CountVectorizer()
+    sparseMatrix = countVectorizer.fit_transform(descriptionsRaw)
+    sparseMatrixKeywords = countVectorizer.transform([keywords])
+    similarityRow = cosine_similarity(sparseMatrix, sparseMatrixKeywords)
+    bestRestaurants = dict()
+    for i in range(0, len(restaurantIds)):
+        bestRestaurants[restaurantIds[i]] = similarityRow[i]
+
+    print(dict(sorted(bestRestaurants.items(), key=lambda item: item[1], reverse=True)))
+    restaurants = []
+    for key in dict(sorted(bestRestaurants.items(), key=lambda item: item[1], reverse=True)):
+        ret = dict()
+        restaurant = Restaurant.objects.get(id=key)
+        restaurants.append(restaurant)
+        # self.stdout.write(self.style.SUCCESS("Recommended Hotel: {}, {}".format(getattr( Hotel.objects.get(id=key), 'name' ), getattr( Hotel.objects.get(id=key), 'bookingLink' ))))
+
+    print("here")
+    return restaurants
 
 
 def findrestaurants(cityObj):

@@ -1,3 +1,4 @@
+from re import L
 from django.shortcuts import redirect, render
 from rest_framework.views import APIView
 from rest_framework.decorators import api_view, permission_classes
@@ -10,15 +11,17 @@ from api.serializers import RegisterHotelSerializer, TagsSerializer, LinkRestaur
 from api.serializers import RestaurantsSerializer, ProfileSerializer
 from django.http import HttpResponse
 
-from api.supportFunctions.findrestaurants import findrestaurants, findRestaurantsFromKeywords, findRestaurantsFromKeywordsSync   
+from api.supportFunctions.findrestaurants import findRestaurantsFromKeywordsGo, findrestaurants, findRestaurantsFromKeywords, findRestaurantsFromKeywordsSync   
 from .permissions import CanAddBusinessObjects, CanEditBusinessObject
 from taggit.models import Tag
 from rest_framework.mixins import UpdateModelMixin
 from api.supportFunctions.findhotel import findHotel
 from api.supportFunctions.runscraper import runScraper
 from api.supportFunctions.fetchIDFunctions import fetchByCityAndCountry
+from api.supportFunctions.findrestaurants import findrestaurantsGo
 import json
 from django.conf import settings
+
 
 def indexInProd(request):
     return redirect("https://github.com/TheBoringDuo/adventus-api")
@@ -355,16 +358,21 @@ def getRestaurantsFromKeywords(request, countryName, cityName, keywords=""):
         return Response("There is no such country", status=418)
 
     if keywords == "":
-        restaurants = findrestaurants(cityObj)
+        restaurants = findrestaurantsGo(cityObj)
         serializer = RestaurantsSerializer(restaurants, many=True)
         return Response(serializer.data)
 
-    ret = findRestaurantsFromKeywordsSync(cityObj, keywords, 2)
+    ret = findRestaurantsFromKeywordsGo(cityObj, keywords)
     if ret == 47:
         findrestaurants(cityObj) # unlimited = False for obvious reasons
-        ret = findRestaurantsFromKeywordsSync(cityObj, keywords, 2)
+        ret = findRestaurantsFromKeywordsGo(cityObj, keywords)
         serializer = RestaurantsSerializer(ret, many=True)
         return Response(serializer.data)
     else:
         serializer = RestaurantsSerializer(ret, many=True)
         return Response(serializer.data)
+
+@api_view(["GET"])
+def testGoView(request):
+    cityObj = City.objects.get(id=1)
+    return Response(findRestaurantsFromKeywordsGo(cityObj, 'price'))
