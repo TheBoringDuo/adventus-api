@@ -6,3 +6,4 @@ apienv/
 /static
 myvenv/
 tags
+*.cnf
