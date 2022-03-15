@@ -92,11 +92,19 @@ def findRestaurantsFromKeywordsGo(cityObj, keywords):
 
     results = json.loads(result)
     for restaurant in results:
-        print(restaurant.keys())
         output = base64.b64decode(restaurant['content'])
         soup=BeautifulSoup(output, 'lxml')
         base = soup.find_all("div", class_="listContainer")[0]
 
+        r = Restaurant.objects.get(id=restaurant['id'])
+
+        try:
+            picLink = soup.find("img", {"class": "basicImg"})["data-lazyurl"]
+            r.linkToTripadvisorPic = picLink
+
+            r.save()
+        except:
+            pass
         for item in base.find_all("div", {"class": "reviewSelector"}):
             title = ''
             positive = ''
@@ -117,7 +125,6 @@ def findRestaurantsFromKeywordsGo(cityObj, keywords):
                 print(e)
 
             restaurantDescription[restaurant['id']] += title + " " + positive
-        print("Done with", restaurant['id'])
     restaurant_count = restaurants.count()
     descriptionsRaw = []
     for key in restaurantDescription:
