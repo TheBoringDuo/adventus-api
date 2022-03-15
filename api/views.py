@@ -364,7 +364,7 @@ def getRestaurantsFromKeywords(request, countryName, cityName, keywords=""):
 
     ret = findRestaurantsFromKeywordsGo(cityObj, keywords)
     if ret == 47:
-        findrestaurants(cityObj) # unlimited = False for obvious reasons
+        findrestaurantsGo(cityObj) # unlimited = False for obvious reasons
         ret = findRestaurantsFromKeywordsGo(cityObj, keywords)
         serializer = RestaurantsSerializer(ret, many=True)
         return Response(serializer.data)
