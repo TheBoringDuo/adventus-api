@@ -144,7 +144,8 @@ def findHotel(cityObj, keywords, pages):
                 hotel.reviews = desc
                 hotel.lastFetchedReviews = timezone.now()
                 hotel.save()
-            except: #description doesn't exist continue
+            except Exception as e: #description doesn't exist continue
+                print(e)
                 pass
         hotels = hotels.exclude(id__in=to_exclude)  
         offset += 25

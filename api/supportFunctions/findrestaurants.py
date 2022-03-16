@@ -144,7 +144,8 @@ def findRestaurantsFromKeywordsGo(cityObj, keywords):
             restaurant.reviews = desc
             restaurant.lastFetchedReviews = timezone.now()
             restaurant.save()
-        except: #description doesn't exist continue
+        except Exception as e: #description doesn't exist continue
+            print(e)
             pass
         
     for restaurant in cachedRestaurants:
