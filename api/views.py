@@ -296,6 +296,43 @@ def getFavouriteHotels(request):
     serializer = HotelsSerializer(hotels, many=True)
     return Response(serializer.data)
 
+
+@api_view(["POST"])
+@permission_classes((permissions.IsAuthenticated,))
+def addToFavouriteRestaurants(request):
+    serializer = AddOrRemoveFromFavouritesSerializer(request.data)
+    user = request.user
+    restaurant_id = serializer.data["obj_id"]
+    try:
+        restaurant = Restaurant.objects.get(id = restaurant_id)
+    except:
+        return Response("There is no such restaurant", status=404)
+    user.favouriteRestaurants.add(restaurant)
+    user.save()
+    return Response("Successful")
+
+@api_view(["POST"])
+@permission_classes((permissions.IsAuthenticated,))
+def removeFromFavouriteRestaurants(request):
+    serializer = AddOrRemoveFromFavouritesSerializer(request.data)
+    user = request.user
+    restaurant_id = serializer.data["obj_id"]
+    try:
+        restaurant = Restaurant.objects.get(id = restaurant_id)
+    except:
+        return Response("There is no such restaurant", status=404)
+    user.favouriteRestaurants.remove(restaurant)
+    user.save()
+    return Response("Successful")
+
+@api_view(["GET"])
+@permission_classes((permissions.IsAuthenticated,))
+def getFavouriteRestaurants(request):
+    user = request.user
+    restaurants = user.favouriteRestaurants
+    serializer = RestaurantsSerializer(restaurants, many=True)
+    return Response(serializer.data)
+
 @api_view(["GET"])
 def getRestaurantsByNames(request, countryName, cityName):
     cityExists = True
