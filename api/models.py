@@ -57,6 +57,9 @@ class Restaurant(models.Model):
     locLong = models.DecimalField(max_digits=9, decimal_places=6, null=True)
     locLat = models.DecimalField(max_digits=9, decimal_places=6, null=True)
     tags = TaggableManager()
+    lastFetchedReviews = models.DateTimeField(default=None, null=True)
+    reviews = models.TextField(default=None, null=True)
+
 
 class Hotel(models.Model):
     name = models.CharField(max_length=50)
@@ -78,7 +81,21 @@ class Hotel(models.Model):
     locLat = models.DecimalField(max_digits=9, decimal_places=6, null=True)
     tags = TaggableManager()
     restaurant = models.OneToOneField(Restaurant, on_delete=models.DO_NOTHING, null=True)
-    
+    lastFetchedReviews = models.DateTimeField(default=None, null=True)
+    reviews = models.TextField(default=None, null=True)
+
+
+## decided not to use this method for ease - leaving the models just in case
+class HotelReview(models.Model):
+    hotel = models.ForeignKey(Hotel, on_delete=models.CASCADE)
+    content = models.TextField(default=None)
+    added_on = models.DateTimeField(auto_now_add=True)
+
+class RestaurantReview(models.Model):
+    restaurant = models.ForeignKey(Restaurant, on_delete=models.CASCADE)
+    content = models.TextField(default=None)
+    added_on = models.DateTimeField(auto_now_add=True)
+
 @receiver(reset_password_token_created)
 def password_reset_token_created(sender, instance, reset_password_token, *args, **kwargs):
     """

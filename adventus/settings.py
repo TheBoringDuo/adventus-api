@@ -161,3 +161,7 @@ EMAIL_USE_TLS = True
 EMAIL_PORT = 587
 EMAIL_HOST_USER = 'adventus.gcp@gmail.com'
 EMAIL_HOST_PASSWORD = secret.EMAIL_PASS
+
+
+HOTEL_REVIEW_LIFETIME = timedelta(days=1)
+RESTAURANT_REVIEW_LIFETIME = timedelta(days=1)

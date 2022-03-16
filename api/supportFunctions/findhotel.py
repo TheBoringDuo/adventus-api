@@ -1,4 +1,5 @@
 import asyncio
+from functools import cache
 from multiprocessing.dummy import Array
 from aiohttp import ClientSession
 from django.core.management.base import BaseCommand, CommandError
@@ -13,7 +14,9 @@ import sys
 from asgiref.sync import sync_to_async
 from bs4 import BeautifulSoup
 import re
-
+from datetime import date, datetime, timedelta
+from django.conf import settings
+from django.utils import timezone
 headers = {'User-Agent':'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/91.0.4472.114 Safari/537.36'}
 
 
@@ -104,7 +107,15 @@ def findHotel(cityObj, keywords, pages):
     hotels = hotels.exclude(bookingLink=None)
     hotel_count = hotels.count()
     offset = 0
-    while hotel_count > 0 and offset < pages*25:
+    current_date = timezone.now()
+    pastdate = current_date - settings.HOTEL_REVIEW_LIFETIME
+    cachedHotels = hotels.filter(lastFetchedReviews__range=(pastdate, timezone.now())) # don't change timezone.now() to current_date here!!!!!!!!!!!
+    cachedHotelsIDs = cachedHotels.values('id')
+    hotels = hotels.exclude(id__in=cachedHotelsIDs)
+    print("Left hotels", hotels)
+    hasRunOnce = False
+    while (hotel_count > 0 or not hasRunOnce)and offset < pages*25:
+        hasRunOnce = True
         print("Count", hotel_count)
         hotelsobj = [] # need a separate hotelsobj to pass to the async function as django cannot handle working with models in async
         for hotel in hotels:
@@ -121,20 +132,34 @@ def findHotel(cityObj, keywords, pages):
                 hotelobj["hotel_id"] = hotel.id
                 hotelobj["hotel_link"] = url1
                 hotelsobj.append(hotelobj)
-            
             except Exception as e:
                 hotels = hotels.exclude(id=hotel.id)
         future = asyncio.ensure_future(do_as_completed(hotelsobj, hotelDescriptions, hotelIds))
         loop.run_until_complete(future)
         hotelDescriptions, hotelIds, to_exclude = future.result()
+        for hotel in hotels:
+            try:
+                desc = hotelDescriptions[hotel.id]
+                print("Saving reviews for hotel", hotel.id)
+                hotel.reviews = desc
+                hotel.lastFetchedReviews = timezone.now()
+                hotel.save()
+            except: #description doesn't exist continue
+                pass
         hotels = hotels.exclude(id__in=to_exclude)  
         offset += 25
         hotel_count = hotels.count()
+
+        for hotel in cachedHotels:
+            hotelDescriptions[hotel.id] = hotel.reviews
+            hotelIds.append(hotel.id)
 
         
         descriptionsRaw = []
         for key in hotelDescriptions:
             descriptionsRaw.append(hotelDescriptions[key])
+
+
 
         countVectorizer = CountVectorizer()
         sparseMatrix = countVectorizer.fit_transform(descriptionsRaw)
