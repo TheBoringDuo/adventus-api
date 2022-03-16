@@ -18,6 +18,10 @@ import re
 import time
 import subprocess
 import base64
+from datetime import date, datetime, timedelta
+from django.conf import settings
+from django.utils import timezone
+
 
 getlistLoc = "api/supportFunctions/goexecs/getlist"
 getreviewsLoc = "api/supportFunctions/goexecs/getreviews"
@@ -66,7 +70,12 @@ def findRestaurantsFromKeywordsGo(cityObj, keywords):
     restaurants = restaurants.exclude(tripadvisorLink=None)
     restaurant_count = restaurants.count()
     offset = 0
-
+    current_date = timezone.now()
+    pastdate = current_date - settings.HOTEL_REVIEW_LIFETIME
+    print(pastdate)
+    cachedRestaurants = restaurants.filter(lastFetchedReviews__range=(pastdate, timezone.now())) # don't change timezone.now() to current_date here!!!!!!!!!!!
+    cachedRestaurantIDs = cachedRestaurants.values('id')
+    restaurants = restaurants.exclude(id__in=cachedRestaurantIDs)
     print("Count", restaurant_count)
     restaurantsobj = [] # need a separate hotelsobj to pass to the async function as django cannot handle working with models in async
     for restaurant in restaurants:
@@ -88,44 +97,61 @@ def findRestaurantsFromKeywordsGo(cityObj, keywords):
             restaurants = restaurants.exclude(id=restaurant.id)
 
     ## send restaurantsobj to getreviews
-    result = subprocess.run([getreviewsLoc, json.dumps(restaurantsobj)], stdout=subprocess.PIPE).stdout
+    if len(restaurantsobj) > 0:
+        result = subprocess.run([getreviewsLoc, json.dumps(restaurantsobj)], stdout=subprocess.PIPE).stdout
 
-    results = json.loads(result)
-    for restaurant in results:
-        output = base64.b64decode(restaurant['content'])
-        soup=BeautifulSoup(output, 'lxml')
-        base = soup.find_all("div", class_="listContainer")[0]
+        results = json.loads(result)
+        for restaurant in results:
+            output = base64.b64decode(restaurant['content'])
+            soup=BeautifulSoup(output, 'lxml')
+            base = soup.find_all("div", class_="listContainer")[0]
 
-        r = Restaurant.objects.get(id=restaurant['id'])
-
-        try:
-            picLink = soup.find("img", {"class": "basicImg"})["data-lazyurl"]
-            r.linkToTripadvisorPic = picLink
-
-            r.save()
-        except:
-            pass
-        for item in base.find_all("div", {"class": "reviewSelector"}):
-            title = ''
-            positive = ''
+            r = Restaurant.objects.get(id=restaurant['id'])
 
             try:
-                itemSelected = item.find('a', {"class": "title"}).select_one("span")
-                if itemSelected is not None:
-                    title = itemSelected.text
-            except Exception as e:
-                # raise e
-                print(e)
+                picLink = soup.find("img", {"class": "basicImg"})["data-lazyurl"]
+                r.linkToTripadvisorPic = picLink
 
-            try:
-                itemSelected = item.find("p", {"class": "partial_entry"})
-                if itemSelected is not None:
-                    positive = itemSelected.text
-            except Exception as e:
-                print(e)
+                r.save()
+            except:
+                pass
+            for item in base.find_all("div", {"class": "reviewSelector"}):
+                title = ''
+                positive = ''
 
-            restaurantDescription[restaurant['id']] += title + " " + positive
+                try:
+                    itemSelected = item.find('a', {"class": "title"}).select_one("span")
+                    if itemSelected is not None:
+                        title = itemSelected.text
+                except Exception as e:
+                    # raise e
+                    print(e)
+
+                try:
+                    itemSelected = item.find("p", {"class": "partial_entry"})
+                    if itemSelected is not None:
+                        positive = itemSelected.text
+                except Exception as e:
+                    print(e)
+
+                restaurantDescription[restaurant['id']] += title + " " + positive
     restaurant_count = restaurants.count()
+
+    for restaurant in restaurants:
+        try:
+            desc = restaurantDescription[restaurant.id]
+            print("Saving reviews for restaurant", restaurant.id)
+            restaurant.reviews = desc
+            restaurant.lastFetchedReviews = timezone.now()
+            restaurant.save()
+        except: #description doesn't exist continue
+            pass
+        
+    for restaurant in cachedRestaurants:
+        restaurantDescription[restaurant.id] = restaurant.reviews
+        restaurantIds.append(restaurant.id)
+
+    
     descriptionsRaw = []
     for key in restaurantDescription:
         descriptionsRaw.append(restaurantDescription[key])

@@ -105,13 +105,14 @@ def findHotel(cityObj, keywords, pages):
     hotelDescriptions = dict()
     hotelIds = []
     hotels = hotels.exclude(bookingLink=None)
-    hotel_count = hotels.count()
     offset = 0
     current_date = timezone.now()
     pastdate = current_date - settings.HOTEL_REVIEW_LIFETIME
+    print(pastdate)
     cachedHotels = hotels.filter(lastFetchedReviews__range=(pastdate, timezone.now())) # don't change timezone.now() to current_date here!!!!!!!!!!!
     cachedHotelsIDs = cachedHotels.values('id')
     hotels = hotels.exclude(id__in=cachedHotelsIDs)
+    hotel_count = hotels.count()
     print("Left hotels", hotels)
     hasRunOnce = False
     while (hotel_count > 0 or not hasRunOnce)and offset < pages*25:
