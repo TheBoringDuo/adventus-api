@@ -1,5 +1,4 @@
 import asyncio
-from functools import cache
 from multiprocessing.dummy import Array
 from aiohttp import ClientSession
 from django.core.management.base import BaseCommand, CommandError

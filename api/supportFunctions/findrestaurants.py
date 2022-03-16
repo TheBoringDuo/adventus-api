@@ -71,7 +71,7 @@ def findRestaurantsFromKeywordsGo(cityObj, keywords):
     restaurant_count = restaurants.count()
     offset = 0
     current_date = timezone.now()
-    pastdate = current_date - settings.HOTEL_REVIEW_LIFETIME
+    pastdate = current_date - settings.RESTAURANT_REVIEW_LIFETIME
     print(pastdate)
     cachedRestaurants = restaurants.filter(lastFetchedReviews__range=(pastdate, timezone.now())) # don't change timezone.now() to current_date here!!!!!!!!!!!
     cachedRestaurantIDs = cachedRestaurants.values('id')
