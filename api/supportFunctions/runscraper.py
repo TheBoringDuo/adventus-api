@@ -13,7 +13,7 @@ def runScraper(cityObj, unlimited):
     cont = True
     offset = 0
     while cont:
-        url1 = 'https://www.booking.com/searchresults.html?dest_id=' + destID + '&dest_type=city&offset=' + str(offset)
+        url1 = 'https://www.booking.com/searchresults.html?dest_id=' + destID + '&dest_type=city&offset=' + str(offset) + '&order=popularity'
         response=requests.get(url1,headers=headers)
 
         soup=BeautifulSoup(response.content,'lxml')
