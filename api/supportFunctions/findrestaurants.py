@@ -97,6 +97,7 @@ def findRestaurantsFromKeywordsGo(cityObj, keywords):
             restaurants = restaurants.exclude(id=restaurant.id)
 
     ## send restaurantsobj to getreviews
+    restaurantPics = dict()
     if len(restaurantsobj) > 0:
         result = subprocess.run([getreviewsLoc, json.dumps(restaurantsobj)], stdout=subprocess.PIPE).stdout
 
@@ -106,14 +107,11 @@ def findRestaurantsFromKeywordsGo(cityObj, keywords):
             soup=BeautifulSoup(output, 'lxml')
             base = soup.find_all("div", class_="listContainer")[0]
 
-            r = Restaurant.objects.get(id=restaurant['id'])
-
             try:
                 picLink = soup.find("img", {"class": "basicImg"})["data-lazyurl"]
-                r.linkToTripadvisorPic = picLink
-
-                r.save()
-            except:
+                restaurantPics[restaurant['id']] = picLink
+            except Exception as e:
+                print(e)
                 pass
             for item in base.find_all("div", {"class": "reviewSelector"}):
                 title = ''
@@ -142,6 +140,11 @@ def findRestaurantsFromKeywordsGo(cityObj, keywords):
             desc = restaurantDescription[restaurant.id]
             print("Saving reviews for restaurant", restaurant.id)
             restaurant.reviews = desc
+            try:
+                picLink = restaurantPics[restaurant.id]
+                restaurant.linkToTripadvisorPic = picLink
+            except Exception as e:
+                print(e)
             restaurant.lastFetchedReviews = timezone.now()
             restaurant.save()
         except Exception as e: #description doesn't exist continue
