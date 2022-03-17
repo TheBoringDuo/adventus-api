@@ -41,7 +41,7 @@ class User(AbstractUser):
     
 
 class Restaurant(models.Model):
-    name = models.CharField(max_length=50)
+    name = models.CharField(max_length=85)
     added_on = models.DateTimeField(auto_now_add=True)
     linkToTripadvisorPic = models.TextField(default="", null=True)
     tripadvisorLink = models.TextField(default="")
@@ -62,7 +62,7 @@ class Restaurant(models.Model):
 
 
 class Hotel(models.Model):
-    name = models.CharField(max_length=50)
+    name = models.CharField(max_length=85)
     bookingLink = models.TextField(default="")
     linkToBookingPic = models.TextField(default="", null=True)
     starRating = models.IntegerField(default=None, null=True)

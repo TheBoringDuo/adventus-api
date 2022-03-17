@@ -36,7 +36,10 @@ def runScraper(cityObj, unlimited):
                 hotel.bookingLink = link
                 hotel.linkToBookingPic = linkPic
                 hotel.bookingRating = rating
-                hotel.starRating = starRating
+                try:
+                    hotel.starRating = starRating
+                except:
+                    pass
                 hotel.save()
 
                 if hotelName not in allFetched:
