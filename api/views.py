@@ -5,7 +5,7 @@ from rest_framework.decorators import api_view, permission_classes
 from rest_framework.response import Response
 from rest_framework import authentication, permissions, generics
 # Create your views here.
-from api.models import Hotel, City, Country, User, Restaurant
+from api.models import Hotel, City, Country, User, Restaurant, SearchPhrase
 from api.serializers import HotelsSerializer, CitySerializer, RegisterSerializer, BusinessRegisterSerializer, HotelSerializer, RestaurantSerializer, RestaurantsSerializer, RegisterRestaurantSerializer
 from api.serializers import RegisterHotelSerializer, TagsSerializer, LinkRestaurantToHotelSerializer, AddOrRemoveFromFavouritesSerializer
 from api.serializers import RestaurantsSerializer, ProfileSerializer
@@ -218,27 +218,40 @@ def connectRestaurantToHotel(request):
 @api_view(["GET"])
 def getHotelsFromKeywords(request, countryName, cityName, keywords=""):
     cityExists = True
-    try:
-        countryObj = Country.objects.get(name__iexact=countryName)
+    countinueToElse = False
+    if countryName == "customsearch":
         try:
-            cityObj = City.objects.get(name__iexact=cityName, country=countryObj)
+            phraseObj = SearchPhrase.objects.get(phrase__iexact=cityName)
+            cityObj = phraseObj.city
+            print("Grabbing from Cache", cityName, cityObj)
+        except:
+            countinueToElse = True
+    
+    if countinueToElse:
+        try:
+            countryObj = Country.objects.get(name__iexact=countryName)
+            try:
+                cityObj = City.objects.get(name__iexact=cityName, country=countryObj)
+            except Exception as e:
+                print(e)
+                bookingID = fetchByCityAndCountry(cityName, countryName)
+                if bookingID is None:
+                    return Response("There is no such city", status=418)
+                try:
+                    cityObj = City.objects.get(destID=bookingID)
+                    if countryName == "customsearch": # this caches the search phrase
+                        SearchPhrase.objects.create(phrase=cityName, city=cityObj)
+                        print("Cached", cityName, cityObj)
+                except:
+                    cityObj = City.objects.create(name=cityName, country=countryObj, destID=bookingID)
+
+
         except Exception as e:
             print(e)
-            bookingID = fetchByCityAndCountry(cityName, countryName)
-            if bookingID is None:
-                return Response("There is no such city", status=418)
-            try:
-                cityObj = City.objects.get(destID=bookingID)
-            except:
-                cityObj = City.objects.create(name=cityName, country=countryObj, destID=bookingID)
+            # if the country doesn't exist do not continue - we will add rows for every country
+            # if we let the user add countries by creating a entry for each new one we will get ...
 
-
-    except Exception as e:
-        print(e)
-        # if the country doesn't exist do not continue - we will add rows for every country
-        # if we let the user add countries by creating a entry for each new one we will get ...
-
-        return Response("There is no such country", status=418)
+            return Response("There is no such country", status=418)
 
     if keywords == "":
         hotels = Hotel.objects.filter(city=cityObj).order_by("-bookingRating")
@@ -372,27 +385,40 @@ def getProfile(request):
 @api_view(["GET"])
 def getRestaurantsFromKeywords(request, countryName, cityName, keywords=""):
     cityExists = True
-    try:
-        countryObj = Country.objects.get(name__iexact=countryName)
+    countinueToElse = False
+    if countryName == "customsearch":
         try:
-            cityObj = City.objects.get(name__iexact=cityName, country=countryObj)
+            phraseObj = SearchPhrase.objects.get(phrase__iexact=cityName)
+            cityObj = phraseObj.city
+            print("Grabbing from Cache", cityName, cityObj)
+        except:
+            countinueToElse = True
+
+    if countinueToElse:
+        try:
+            countryObj = Country.objects.get(name__iexact=countryName)
+            try:
+                cityObj = City.objects.get(name__iexact=cityName, country=countryObj)
+            except Exception as e:
+                print(e)
+                bookingID = fetchByCityAndCountry(cityName, countryName)
+                if bookingID is None:
+                    return Response("There is no such city", status=418)
+                try:
+                    cityObj = City.objects.get(destID=bookingID)
+                    if countryName == "customsearch": # this caches the search phrase
+                        SearchPhrase.objects.create(phrase=cityName, city=cityObj)
+                        print("Cached", cityName, cityObj)
+                except:
+                    cityObj = City.objects.create(name=cityName, country=countryObj, destID=bookingID)
+
+
         except Exception as e:
             print(e)
-            bookingID = fetchByCityAndCountry(cityName, countryName)
-            if bookingID is None:
-                return Response("There is no such city", status=418)
-            try:
-                cityObj = City.objects.get(destID=bookingID)
-            except:
-                cityObj = City.objects.create(name=cityName, country=countryObj, destID=bookingID)
+            # if the country doesn't exist do not continue - we will add rows for every country
+            # if we let the user add countries by creating a entry for each new one we will get ...
 
-
-    except Exception as e:
-        print(e)
-        # if the country doesn't exist do not continue - we will add rows for every country
-        # if we let the user add countries by creating a entry for each new one we will get ...
-
-        return Response("There is no such country", status=418)
+            return Response("There is no such country", status=418)
 
     if keywords == "":
         restaurants = findrestaurantsGo(cityObj)

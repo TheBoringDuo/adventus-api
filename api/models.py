@@ -85,6 +85,11 @@ class Hotel(models.Model):
     reviews = models.TextField(default=None, null=True)
 
 
+class SearchPhrase(models.Model):
+    phrase = models.TextField()
+    city = models.ForeignKey(City, on_delete=models.CASCADE)
+
+
 ## decided not to use this method for ease - leaving the models just in case
 class HotelReview(models.Model):
     hotel = models.ForeignKey(Hotel, on_delete=models.CASCADE)
