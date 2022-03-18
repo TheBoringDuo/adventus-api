@@ -87,7 +87,7 @@ class Hotel(models.Model):
 
 
 class SearchPhrase(models.Model):
-    phrase = models.TextField(unique=True, max_length=100)
+    phrase = models.CharField(unique=True, max_length=100)
     city = models.ForeignKey(City, on_delete=models.CASCADE)
 
 
