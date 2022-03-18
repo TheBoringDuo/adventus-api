@@ -240,7 +240,7 @@ def getHotelsFromKeywords(request, countryName, cityName, keywords=""):
                 try:
                     cityObj = City.objects.get(destID=bookingID)
                     if countryName == "customsearch": # this caches the search phrase
-                        SearchPhrase.objects.create(phrase=cityName, city=cityObj)
+                        SearchPhrase.objects.get_or_create(phrase=cityName, city=cityObj)
                         print("Cached", cityName, cityObj)
                 except:
                     cityObj = City.objects.create(name=cityName, country=countryObj, destID=bookingID)
@@ -407,7 +407,7 @@ def getRestaurantsFromKeywords(request, countryName, cityName, keywords=""):
                 try:
                     cityObj = City.objects.get(destID=bookingID)
                     if countryName == "customsearch": # this caches the search phrase
-                        SearchPhrase.objects.create(phrase=cityName, city=cityObj)
+                        SearchPhrase.objects.get_or_create(phrase=cityName, city=cityObj)
                         print("Cached", cityName, cityObj)
                 except:
                     cityObj = City.objects.create(name=cityName, country=countryObj, destID=bookingID)

@@ -1,3 +1,4 @@
+from enum import unique
 from unicodedata import decimal
 from django.db import models
 from django.contrib.auth.models import AbstractUser
@@ -86,7 +87,7 @@ class Hotel(models.Model):
 
 
 class SearchPhrase(models.Model):
-    phrase = models.TextField()
+    phrase = models.TextField(unique=True)
     city = models.ForeignKey(City, on_delete=models.CASCADE)
 
 
