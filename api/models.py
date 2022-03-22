@@ -14,19 +14,17 @@ from django_rest_passwordreset.signals import reset_password_token_created
 from taggit.managers import TaggableManager
 # Create your models here.
 
+
 class Country(models.Model):
     name = models.CharField(max_length=30, unique=True)
-
+    
 class City(models.Model):
     name = models.CharField(max_length=30)
-    country = models.ForeignKey(Country, on_delete=models.RESTRICT)
     destID = models.CharField(max_length=12, null=False, unique=True)
     
     def __str__(self):
-        return "{}, {}".format(self.name, self.country.name)
+        return "{}, {}".format(self.name, self.destID)
 
-    class Meta:
-        unique_together = ('name', 'country')
     
 
 class User(AbstractUser):

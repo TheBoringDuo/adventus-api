@@ -17,10 +17,12 @@ from taggit.models import Tag
 from rest_framework.mixins import UpdateModelMixin
 from api.supportFunctions.findhotel import findHotel
 from api.supportFunctions.runscraper import runScraper
-from api.supportFunctions.fetchIDFunctions import fetchByCityAndCountry
+from api.supportFunctions.fetchIDFunctions import fetchByCityAndCountry, fetchByCityAssured
 from api.supportFunctions.findrestaurants import findrestaurantsGo
 import json
 from django.conf import settings
+import threading
+
 
 
 def indexInProd(request):
@@ -141,9 +143,10 @@ class BusinessRegisterView(generics.CreateAPIView):
 	serializer_class = BusinessRegisterSerializer
 
 @api_view(['GET'])
-@permission_classes((CanAddBusinessObjects,))
 def testView(request):
-    return HttpResponse("Business Client")
+    x = fetchByCityAssured("Varna Bulgaria")
+    print(x)
+    return Response(x)
 
 @permission_classes((CanAddBusinessObjects,permissions.IsAuthenticated,))
 class RegisterHotelView(generics.CreateAPIView):
@@ -217,42 +220,30 @@ def connectRestaurantToHotel(request):
 
 @api_view(["GET"])
 def getHotelsFromKeywords(request, countryName, cityName, keywords=""):
-    cityExists = True
-    countinueToElse = False
     if countryName == "customsearch":
         try:
             phraseObj = SearchPhrase.objects.get(phrase__iexact=cityName)
             cityObj = phraseObj.city
             print("Grabbing from Cache", cityName, cityObj)
         except:
-            countinueToElse = True
-    
-    if countinueToElse:
-        try:
-            countryObj = Country.objects.get(name__iexact=countryName)
             try:
-                cityObj = City.objects.get(name__iexact=cityName, country=countryObj)
+                cityObj = City.objects.get(name__iexact=cityName)
             except Exception as e:
                 print(e)
-                bookingID = fetchByCityAndCountry(cityName, countryName)
+                bookingID = fetchByCityAssured(cityName)
                 if bookingID is None:
                     return Response("There is no such city", status=418)
                 try:
                     cityObj = City.objects.get(destID=bookingID)
-                    if countryName == "customsearch": # this caches the search phrase
-                        SearchPhrase.objects.get_or_create(phrase=cityName, city=cityObj)
-                        print("Cached", cityName, cityObj)
+                    SearchPhrase.objects.get_or_create(phrase=cityName, city=cityObj)
+                    print("Cached", cityName, cityObj)
                 except:
-                    cityObj = City.objects.create(name=cityName, country=countryObj, destID=bookingID)
+                    cityObj = City.objects.get_or_create(name=cityName, destID=bookingID)[0]
 
+    else:
+        return Response("Adventus API supports custom searches only from now on. Use /findhotels/customsearch/<location>/<keywords>/", status=419)
 
-        except Exception as e:
-            print(e)
-            # if the country doesn't exist do not continue - we will add rows for every country
-            # if we let the user add countries by creating a entry for each new one we will get ...
-
-            return Response("There is no such country", status=418)
-
+    print(cityObj)
     if keywords == "":
         hotels = Hotel.objects.filter(city=cityObj).order_by("-bookingRating")
         if hotels.count() == 0:
@@ -384,41 +375,28 @@ def getProfile(request):
 
 @api_view(["GET"])
 def getRestaurantsFromKeywords(request, countryName, cityName, keywords=""):
-    cityExists = True
-    countinueToElse = False
     if countryName == "customsearch":
         try:
             phraseObj = SearchPhrase.objects.get(phrase__iexact=cityName)
             cityObj = phraseObj.city
             print("Grabbing from Cache", cityName, cityObj)
         except:
-            countinueToElse = True
-
-    if countinueToElse:
-        try:
-            countryObj = Country.objects.get(name__iexact=countryName)
             try:
-                cityObj = City.objects.get(name__iexact=cityName, country=countryObj)
+                cityObj = City.objects.get(name__iexact=cityName)
             except Exception as e:
                 print(e)
-                bookingID = fetchByCityAndCountry(cityName, countryName)
+                bookingID = fetchByCityAssured(cityName)
                 if bookingID is None:
                     return Response("There is no such city", status=418)
                 try:
                     cityObj = City.objects.get(destID=bookingID)
-                    if countryName == "customsearch": # this caches the search phrase
-                        SearchPhrase.objects.get_or_create(phrase=cityName, city=cityObj)
-                        print("Cached", cityName, cityObj)
+                    SearchPhrase.objects.get_or_create(phrase=cityName, city=cityObj)
+                    print("Cached", cityName, cityObj)
                 except:
-                    cityObj = City.objects.create(name=cityName, country=countryObj, destID=bookingID)
+                    cityObj = City.objects.get_or_create(name=cityName, destID=bookingID)[0]
 
-
-        except Exception as e:
-            print(e)
-            # if the country doesn't exist do not continue - we will add rows for every country
-            # if we let the user add countries by creating a entry for each new one we will get ...
-
-            return Response("There is no such country", status=418)
+    else:
+        return Response("Adventus API supports custom searches only from now on. Use /findrestaurants/customsearch/<location>/<keywords>/", status=419)
 
     if keywords == "":
         restaurants = findrestaurantsGo(cityObj)
