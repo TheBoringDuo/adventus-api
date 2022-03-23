@@ -1,3 +1,4 @@
+from functools import cache
 from re import L
 from django.shortcuts import redirect, render
 from rest_framework.views import APIView
@@ -22,7 +23,7 @@ from api.supportFunctions.findrestaurants import findrestaurantsGo
 import json
 from django.conf import settings
 import threading
-
+from api.supportFunctions.listcaching import getCachedResultHotel, cacheResultHotel, cacheResultRestaurant, getCachedResultRestaurant
 
 
 def indexInProd(request):
@@ -244,11 +245,20 @@ def getHotelsFromKeywords(request, countryName, cityName, keywords=""):
         return Response("Adventus API supports custom searches only from now on. Use /findhotels/customsearch/<location>/<keywords>/", status=419)
 
     print(cityObj)
+
+    cachedResult = getCachedResultHotel(cityObj, keywords)
+    print("Cached", cachedResult)
+    if cachedResult is not None:
+        serializer = HotelsSerializer(cachedResult, many=True)
+        print("Returning a cached list")
+        return Response(serializer.data)
+
     if keywords == "":
         hotels = Hotel.objects.filter(city=cityObj).order_by("-bookingRating")
         if hotels.count() == 0:
             runScraper(cityObj, False)
         serializer = HotelsSerializer(hotels, many=True)
+        cacheResultRestaurant(cityObj, hotels, keywords)
         return Response(serializer.data)
 
     ret = findHotel(cityObj, keywords, 2)
@@ -256,11 +266,11 @@ def getHotelsFromKeywords(request, countryName, cityName, keywords=""):
         runScraper(cityObj, False) # unlimited = False for obvious reasons
         ret = findHotel(cityObj, keywords, 2)
         serializer = HotelsSerializer(ret, many=True)
-        return Response(serializer.data)
     else:
         serializer = HotelsSerializer(ret, many=True)
-        return Response(serializer.data)
 
+    cacheResultHotel(cityObj, ret, keywords)
+    return Response(serializer.data)
 
 @api_view(["POST"])
 @permission_classes((permissions.IsAuthenticated,))
@@ -398,9 +408,17 @@ def getRestaurantsFromKeywords(request, countryName, cityName, keywords=""):
     else:
         return Response("Adventus API supports custom searches only from now on. Use /findrestaurants/customsearch/<location>/<keywords>/", status=419)
 
+    cachedResult = getCachedResultRestaurant(cityObj, keywords)
+    print("Cached", cachedResult)
+    if cachedResult is not None:
+        serializer = RestaurantsSerializer(cachedResult, many=True)
+        print("Returning a cached list")
+        return Response(serializer.data)
+
     if keywords == "":
         restaurants = findrestaurantsGo(cityObj)
         serializer = RestaurantsSerializer(restaurants, many=True)
+        cacheResultRestaurant(cityObj, restaurants, keywords)
         return Response(serializer.data)
 
     ret = findRestaurantsFromKeywordsGo(cityObj, keywords)
@@ -408,10 +426,11 @@ def getRestaurantsFromKeywords(request, countryName, cityName, keywords=""):
         findrestaurantsGo(cityObj) # unlimited = False for obvious reasons
         ret = findRestaurantsFromKeywordsGo(cityObj, keywords)
         serializer = RestaurantsSerializer(ret, many=True)
-        return Response(serializer.data)
     else:
         serializer = RestaurantsSerializer(ret, many=True)
-        return Response(serializer.data)
+
+    cacheResultRestaurant(cityObj, ret, keywords)
+    return Response(serializer.data)
 
 @api_view(["GET"])
 def testGoView(request):

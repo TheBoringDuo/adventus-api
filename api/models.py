@@ -9,7 +9,7 @@ from django.core.mail import EmailMultiAlternatives
 from django.dispatch import receiver
 from django.template.loader import render_to_string
 from django.urls import reverse
-
+from sortedm2m.fields import SortedManyToManyField
 from django_rest_passwordreset.signals import reset_password_token_created
 from taggit.managers import TaggableManager
 # Create your models here.
@@ -87,6 +87,24 @@ class Hotel(models.Model):
 class SearchPhrase(models.Model):
     phrase = models.CharField(unique=True, max_length=100)
     city = models.ForeignKey(City, on_delete=models.CASCADE)
+
+class CachedListHotels(models.Model):
+    city = models.ForeignKey(City, on_delete=models.CASCADE)
+    hotels = SortedManyToManyField(Hotel, default=None)
+    keywordHash = models.CharField(max_length=32, null=True, default=None)
+    cached_on = models.DateTimeField(auto_now=True)
+
+    class Meta:
+        unique_together = ['city', 'keywordHash']
+
+class CachedListRestaurants(models.Model):
+    city = models.ForeignKey(City, on_delete=models.CASCADE)
+    restaurants = SortedManyToManyField(Restaurant, default=None)
+    keywordHash = models.CharField(max_length=32, null=True, default=None)
+    cached_on = models.DateTimeField(auto_now=True)
+
+    class Meta:
+        unique_together = ['city', 'keywordHash']
 
 
 ## decided not to use this method for ease - leaving the models just in case
