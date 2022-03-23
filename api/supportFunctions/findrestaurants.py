@@ -28,11 +28,7 @@ getreviewsLoc = "api/supportFunctions/goexecs/getreviews"
 geturlsLoc = "api/supportFunctions/goexecs/geturls"
 
 def findrestaurantsGo(cityObj):
-    if cityObj.country.name.lower() == "customsearch":
-        location = cityObj.name
-    else:
-        location = cityObj.name + " " + cityObj.country.name
-
+    location = cityObj.name
     result = subprocess.run([geturlsLoc, location], stdout=subprocess.PIPE).stdout
     linkData = json.loads(result)
     restaurantsURL = linkData[0]["data"]["Typeahead_autocomplete"]["results"][0]["details"]["RESTAURANTS_URL"]
