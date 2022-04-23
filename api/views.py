@@ -226,20 +226,18 @@ def getHotelsFromKeywords(request, countryName, cityName, keywords=""):
             phraseObj = SearchPhrase.objects.get(phrase__iexact=cityName)
             cityObj = phraseObj.city
             print("Grabbing from Cache", cityName, cityObj)
-        except:
+        except Exception as e:
+            print(e)
+            bookingID = fetchByCityAssured(cityName)
+            if bookingID is None:
+                return Response("There is no such city", status=418)
             try:
-                cityObj = City.objects.get(name__iexact=cityName)
-            except Exception as e:
-                print(e)
-                bookingID = fetchByCityAssured(cityName)
-                if bookingID is None:
-                    return Response("There is no such city", status=418)
-                try:
-                    cityObj = City.objects.get(destID=bookingID)
-                    SearchPhrase.objects.get_or_create(phrase=cityName, city=cityObj)
-                    print("Cached", cityName, cityObj)
-                except:
-                    cityObj = City.objects.get_or_create(name=cityName, destID=bookingID)[0]
+                cityObj = City.objects.get(destID=bookingID)
+                SearchPhrase.objects.get_or_create(phrase=cityName, city=cityObj)
+                print("Cached", cityName, cityObj)
+            except:
+                cityObj = City.objects.get_or_create(name=cityName, destID=bookingID)[0]
+                SearchPhrase.objects.get_or_create(phrase=cityName, city=cityObj)
 
     else:
         return Response("Adventus API supports custom searches only from now on. Use /findhotels/customsearch/<location>/<keywords>/", status=419)
@@ -390,20 +388,19 @@ def getRestaurantsFromKeywords(request, countryName, cityName, keywords=""):
             phraseObj = SearchPhrase.objects.get(phrase__iexact=cityName)
             cityObj = phraseObj.city
             print("Grabbing from Cache", cityName, cityObj)
-        except:
+        except Exception as e:
+            print(e)
+            bookingID = fetchByCityAssured(cityName)
+            if bookingID is None:
+                return Response("There is no such city", status=418)
             try:
-                cityObj = City.objects.get(name__iexact=cityName)
-            except Exception as e:
-                print(e)
-                bookingID = fetchByCityAssured(cityName)
-                if bookingID is None:
-                    return Response("There is no such city", status=418)
-                try:
-                    cityObj = City.objects.get(destID=bookingID)
-                    SearchPhrase.objects.get_or_create(phrase=cityName, city=cityObj)
-                    print("Cached", cityName, cityObj)
-                except:
-                    cityObj = City.objects.get_or_create(name=cityName, destID=bookingID)[0]
+                cityObj = City.objects.get(destID=bookingID)
+                SearchPhrase.objects.get_or_create(phrase=cityName, city=cityObj)
+                print("Cached", cityName, cityObj)
+            except:
+                cityObj = City.objects.get_or_create(name=cityName, destID=bookingID)[0]
+                SearchPhrase.objects.get_or_create(phrase=cityName, city=cityObj)
+
 
     else:
         return Response("Adventus API supports custom searches only from now on. Use /findrestaurants/customsearch/<location>/<keywords>/", status=419)

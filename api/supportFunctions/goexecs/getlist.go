@@ -1,1 +1,0 @@
-/home/professor/projects/adventus/adventus-scraper/tripadvisor-get-list.go
