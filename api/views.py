@@ -7,9 +7,9 @@ from rest_framework.response import Response
 from rest_framework import authentication, permissions, generics
 # Create your views here.
 from api.models import Hotel, City, Country, User, Restaurant, SearchPhrase
-from api.serializers import HotelsSerializer, CitySerializer, RegisterSerializer, BusinessRegisterSerializer, HotelSerializer, RestaurantSerializer, RestaurantsSerializer, RegisterRestaurantSerializer
+from api.serializers import HotelsSerializer, CitySerializer, PhraseSerializer, RegisterSerializer, BusinessRegisterSerializer, HotelSerializer, RestaurantSerializer, RestaurantsSerializer, RegisterRestaurantSerializer
 from api.serializers import RegisterHotelSerializer, TagsSerializer, LinkRestaurantToHotelSerializer, AddOrRemoveFromFavouritesSerializer
-from api.serializers import RestaurantsSerializer, ProfileSerializer
+from api.serializers import RestaurantsSerializer, ProfileSerializer, SearchPhrase, StringInputSerializer
 from django.http import HttpResponse
 
 from api.supportFunctions.findrestaurants import findRestaurantsFromKeywordsGo, findrestaurants, findRestaurantsFromKeywords, findRestaurantsFromKeywordsSync   
@@ -322,6 +322,13 @@ def addToFavouriteRestaurants(request):
     user.favouriteRestaurants.add(restaurant)
     user.save()
     return Response("Successful")
+
+@api_view(["POST"])
+def autoComplete(request):
+    serializer = StringInputSerializer(request.data)
+    searchPhrases = SearchPhrase.objects.filter(phrase__icontains=serializer.data['phrase'])
+    return Response(PhraseSerializer(searchPhrases, many=True).data)
+
 
 @api_view(["POST"])
 @permission_classes((permissions.IsAuthenticated,))

@@ -1,6 +1,6 @@
 from rest_framework import serializers
 from rest_framework.validators import UniqueValidator
-from api.models import Hotel, City, Country, User, Restaurant
+from api.models import Hotel, City, Country, User, Restaurant, SearchPhrase
 from django.contrib.auth.password_validation import validate_password
 import uuid
 from taggit.serializers import TagListSerializerField, TaggitSerializer
@@ -153,3 +153,12 @@ class ProfileSerializer(serializers.ModelSerializer):
     class Meta:
         model = User
         fields = ['id', 'first_name', 'last_name', 'email', 'date_joined', 'isBusinessClient']
+
+
+class PhraseSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = SearchPhrase
+        fields = ['phrase']
+
+class StringInputSerializer(serializers.Serializer):
+    phrase = serializers.CharField()

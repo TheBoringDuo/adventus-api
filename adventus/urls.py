@@ -60,7 +60,8 @@ urlpatterns = [
     path('get_restaurants/<countryName>/<cityName>/', api.getRestaurantsByNames),
     path('profile/', api.getProfile),
     path('api/password_reset/', include('django_rest_passwordreset.urls')),
-    path('testGo/', api.testGoView)
+    path('testGo/', api.testGoView),
+    path('autocomplete/', api.autoComplete)
 ]
 
 if settings.DEBUG is False:
